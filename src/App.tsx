@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useKeynoteAudio } from './hooks/useKeynoteAudio';
-import { KeynoteNav } from './components/navigation/KeynoteNav';
+import { HeaderNav } from './components/navigation/HeaderNav';
 import { Chapter01Opening } from './components/chapters/Chapter01Opening';
 import { Chapter02Hero } from './components/chapters/Chapter02Hero';
 import { Chapter03Problem } from './components/chapters/Chapter03Problem';
@@ -12,7 +12,7 @@ import { Chapter08Technology } from './components/chapters/Chapter08Technology';
 import { Chapter09Vision } from './components/chapters/Chapter09Vision';
 import { Chapter10Ending } from './components/chapters/Chapter10Ending';
 
-const CHAPTER_TITLES = [
+const SECTION_TITLES = [
   '01 Opening',
   '02 Hero Statement',
   '03 The Problem',
@@ -26,109 +26,102 @@ const CHAPTER_TITLES = [
 ];
 
 export default function App() {
-  const [currentChapter, setCurrentChapter] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [activeSection, setActiveSection] = useState(0);
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const { isMuted, toggleMute, playClickSound, playMorphSound, playSapphirePulse } = useKeynoteAudio();
 
-  const handleSelectChapter = useCallback((index: number) => {
+  const handleScrollToSection = (index: number) => {
     playClickSound();
-    setCurrentChapter(Math.max(0, Math.min(CHAPTER_TITLES.length - 1, index)));
-  }, [playClickSound]);
-
-  const handleNextChapter = useCallback(() => {
-    handleSelectChapter(currentChapter + 1);
-  }, [currentChapter, handleSelectChapter]);
-
-  // Slideshow auto-advance mode
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setCurrentChapter((prev) => {
-          if (prev >= CHAPTER_TITLES.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
-          playClickSound();
-          return prev + 1;
-        });
-      }, 12000); // 12 seconds per chapter slide
+    const targetRef = sectionRefs.current[index];
+    if (targetRef) {
+      targetRef.scrollIntoView({ behavior: 'smooth' });
     }
-    return () => clearInterval(interval);
-  }, [isPlaying, playClickSound]);
+  };
 
-  // Keyboard navigation shortcuts
+  // Observe active section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      sectionRefs.current.forEach((ref, idx) => {
+        if (ref) {
+          const top = ref.offsetTop;
+          const height = ref.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection(idx);
+          }
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Keyboard Mute Shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        setCurrentChapter((prev) => Math.min(CHAPTER_TITLES.length - 1, prev + 1));
-        playClickSound();
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        setCurrentChapter((prev) => Math.max(0, prev - 1));
-        playClickSound();
-      } else if (e.key === ' ') {
-        e.preventDefault();
-        setIsPlaying((prev) => !prev);
-      } else if (e.key === 'm' || e.key === 'M') {
+      if (e.key === 'm' || e.key === 'M') {
         toggleMute();
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [playClickSound, toggleMute]);
+  }, [toggleMute]);
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-[#FAFAFA] font-sans antialiased overflow-x-hidden select-none">
-      {/* Keynote Navigation Floating Bar */}
-      <KeynoteNav
-        currentChapterIndex={currentChapter}
-        totalChapters={CHAPTER_TITLES.length}
-        chapterTitles={CHAPTER_TITLES}
-        isPlaying={isPlaying}
+    <div className="relative min-h-screen bg-[#050505] text-[#FAFAFA] font-sans antialiased overflow-x-hidden">
+      {/* Floating Header Navbar */}
+      <HeaderNav
+        activeSectionIndex={activeSection}
+        sectionTitles={SECTION_TITLES}
         isMuted={isMuted}
-        onSelectChapter={handleSelectChapter}
-        onTogglePlay={() => setIsPlaying(!isPlaying)}
         onToggleMute={toggleMute}
+        onScrollToSection={handleScrollToSection}
       />
 
-      {/* Main Chapter Content Container */}
-      <main className="relative z-10 w-full transition-opacity duration-700">
-        {currentChapter === 0 && (
-          <Chapter01Opening onProceed={handleNextChapter} onAudioMorph={playMorphSound} />
-        )}
-        {currentChapter === 1 && (
-          <Chapter02Hero onProceed={handleNextChapter} onPlayClick={playClickSound} />
-        )}
-        {currentChapter === 2 && (
-          <Chapter03Problem onProceed={handleNextChapter} />
-        )}
-        {currentChapter === 3 && (
-          <Chapter04Transformation onProceed={handleNextChapter} onAudioMorph={playMorphSound} />
-        )}
-        {currentChapter === 4 && (
-          <Chapter05Platform onProceed={handleNextChapter} onAudioClick={playClickSound} />
-        )}
-        {currentChapter === 5 && (
-          <Chapter06Tour onProceed={handleNextChapter} onAudioClick={playClickSound} />
-        )}
-        {currentChapter === 6 && (
-          <Chapter07AI onProceed={handleNextChapter} onAudioPulse={playSapphirePulse} />
-        )}
-        {currentChapter === 7 && (
-          <Chapter08Technology onProceed={handleNextChapter} onAudioClick={playClickSound} />
-        )}
-        {currentChapter === 8 && (
-          <Chapter09Vision onProceed={handleNextChapter} />
-        )}
-        {currentChapter === 9 && (
-          <Chapter10Ending onRestartKeynote={() => handleSelectChapter(0)} />
-        )}
+      {/* Single Continuous Main Container */}
+      <main className="relative z-10 w-full flex flex-col">
+        <div ref={(el) => (sectionRefs.current[0] = el)} id="opening">
+          <Chapter01Opening onProceed={() => handleScrollToSection(1)} onAudioMorph={playMorphSound} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[1] = el)} id="hero">
+          <Chapter02Hero onProceed={() => handleScrollToSection(2)} onPlayClick={playClickSound} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[2] = el)} id="problem">
+          <Chapter03Problem onProceed={() => handleScrollToSection(3)} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[3] = el)} id="transformation">
+          <Chapter04Transformation onProceed={() => handleScrollToSection(4)} onAudioMorph={playMorphSound} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[4] = el)} id="platform">
+          <Chapter05Platform onProceed={() => handleScrollToSection(5)} onAudioClick={playClickSound} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[5] = el)} id="tour">
+          <Chapter06Tour onProceed={() => handleScrollToSection(6)} onAudioClick={playClickSound} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[6] = el)} id="ai">
+          <Chapter07AI onProceed={() => handleScrollToSection(7)} onAudioPulse={playSapphirePulse} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[7] = el)} id="technology">
+          <Chapter08Technology onProceed={() => handleScrollToSection(8)} onAudioClick={playClickSound} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[8] = el)} id="vision">
+          <Chapter09Vision onProceed={() => handleScrollToSection(9)} />
+        </div>
+
+        <div ref={(el) => (sectionRefs.current[9] = el)} id="ending">
+          <Chapter10Ending onRestartKeynote={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
+        </div>
       </main>
     </div>
   );

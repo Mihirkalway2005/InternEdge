@@ -66,7 +66,7 @@ export const Chapter01Opening: React.FC<Chapter01Props> = ({ onProceed, onAudioM
           onClick={onProceed}
           className="absolute bottom-10 z-30 flex flex-col items-center gap-2 cursor-pointer text-zinc-500 hover:text-white transition-colors pointer-events-auto"
         >
-          <span className="text-[10px] font-mono tracking-widest uppercase">ENTER KEYNOTE PRESENTATION</span>
+          <span className="text-[10px] font-mono tracking-widest uppercase">SCROLL TO UNVEIL PRODUCT</span>
           <ArrowDown size={16} className="animate-bounce" />
         </motion.div>
       )}

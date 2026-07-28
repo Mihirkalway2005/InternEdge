@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LiquidMetalCanvas } from '../canvas/LiquidMetalCanvas';
-import { RotateCcw } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 
 interface Chapter10Props {
   onRestartKeynote: () => void;
@@ -34,7 +34,7 @@ export const Chapter10Ending: React.FC<Chapter10Props> = ({ onRestartKeynote }) 
           OWN EVERY <br /> OPPORTUNITY.
         </motion.h1>
 
-        {/* Replay Keynote Button */}
+        {/* Back to Top Scroll Button */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -43,10 +43,10 @@ export const Chapter10Ending: React.FC<Chapter10Props> = ({ onRestartKeynote }) 
         >
           <button
             onClick={onRestartKeynote}
-            className="px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-zinc-400 hover:text-white hover:bg-white/10 transition-all inline-flex items-center gap-2"
+            className="px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-zinc-400 hover:text-white hover:bg-white/10 transition-all inline-flex items-center gap-2 cursor-pointer"
           >
-            <RotateCcw size={12} />
-            <span>Replay Keynote Presentation</span>
+            <ArrowUp size={14} />
+            <span>Return to Top</span>
           </button>
         </motion.div>
       </div>

@@ -1,0 +1,10 @@
+{
+  "description": "Streamline your internship journey with an AI-powered platform that helps students discover opportunities, optimize resumes, and prepare for interviews.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

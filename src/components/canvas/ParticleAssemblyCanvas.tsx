@@ -73,7 +73,7 @@ export const ParticleAssemblyCanvas: React.FC<ParticleAssemblyCanvasProps> = ({
       offCtx.fillStyle = '#FFFFFF';
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
-      offCtx.fillText('InternEdge', width / 2, height / 2 - 20);
+      offCtx.fillText('INTERNEDGE', width / 2, height / 2 - 20);
 
       const imgData = offCtx.getImageData(0, 0, Math.floor(width * dpr), Math.floor(height * dpr));
       const data = imgData.data;
@@ -183,7 +183,7 @@ export const ParticleAssemblyCanvas: React.FC<ParticleAssemblyCanvasProps> = ({
         ctx.fillStyle = `rgba(255, 255, 255, ${solidAlpha})`;
         ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
         ctx.shadowBlur = 15 * solidAlpha;
-        ctx.fillText('InternEdge', width / 2, height / 2 - 20);
+        ctx.fillText('INTERNEDGE', width / 2, height / 2 - 20);
 
         // Specular metallic sheen sweep across solid wordmark
         if (elapsed > 3.2 && elapsed < 4.4) {

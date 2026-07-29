@@ -75,42 +75,53 @@ export const DropletCanvas: React.FC<DropletCanvasProps> = ({
         ctx.fill();
       }
 
-      if (morphProgress > 0.1) {
-        // Logo unfold mode (Geometric crystal 'IE' emblem)
+        // Logo unfold mode (Official InternEdge geometric 'IE' emblem)
         const logoAlpha = morphProgress;
         ctx.rotate((1 - morphProgress) * Math.PI * 0.25);
 
-        ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * logoAlpha})`;
-        ctx.lineWidth = 3;
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
-        ctx.shadowBlur = 20;
+        ctx.fillStyle = `rgba(255, 255, 255, ${logoAlpha})`;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+        ctx.shadowBlur = 24 * logoAlpha;
 
-        // Outer Octagon / Precision Frame
-        const s = 36 * morphProgress;
+        const s = 0.65 * morphProgress; // scale factor
+        const mapX = (x: number) => (x - 50) * s;
+        const mapY = (y: number) => (y - 50) * s;
+
+        // Left Pillar 'I'
         ctx.beginPath();
-        ctx.moveTo(-s, -s * 0.5);
-        ctx.lineTo(-s * 0.5, -s);
-        ctx.lineTo(s * 0.5, -s);
-        ctx.lineTo(s, -s * 0.5);
-        ctx.lineTo(s, s * 0.5);
-        ctx.lineTo(s * 0.5, s);
-        ctx.lineTo(-s * 0.5, s);
-        ctx.lineTo(-s, s * 0.5);
+        ctx.moveTo(mapX(14), mapY(14));
+        ctx.lineTo(mapX(30), mapY(14));
+        ctx.lineTo(mapX(30), mapY(86));
+        ctx.lineTo(mapX(14), mapY(86));
         ctx.closePath();
-        ctx.stroke();
+        ctx.fill();
 
-        // Inner 'IE' Monogram lines
+        // Top Arm 'E' (45° parallel chamfer)
         ctx.beginPath();
-        ctx.moveTo(-s * 0.4, -s * 0.4);
-        ctx.lineTo(-s * 0.4, s * 0.4);
-        ctx.moveTo(-s * 0.4, 0);
-        ctx.lineTo(0, 0);
+        ctx.moveTo(mapX(43), mapY(14));
+        ctx.lineTo(mapX(86), mapY(14));
+        ctx.lineTo(mapX(70), mapY(30));
+        ctx.lineTo(mapX(43), mapY(30));
+        ctx.closePath();
+        ctx.fill();
 
-        ctx.moveTo(s * 0.4, -s * 0.4);
-        ctx.lineTo(s * 0.1, -s * 0.4);
-        ctx.lineTo(s * 0.1, s * 0.4);
-        ctx.lineTo(s * 0.4, s * 0.4);
-        ctx.stroke();
+        // Middle Arm 'E'
+        ctx.beginPath();
+        ctx.moveTo(mapX(43), mapY(42));
+        ctx.lineTo(mapX(68), mapY(42));
+        ctx.lineTo(mapX(68), mapY(58));
+        ctx.lineTo(mapX(43), mapY(58));
+        ctx.closePath();
+        ctx.fill();
+
+        // Bottom Arm 'E' (45° parallel chamfer)
+        ctx.beginPath();
+        ctx.moveTo(mapX(43), mapY(70));
+        ctx.lineTo(mapX(86), mapY(70));
+        ctx.lineTo(mapX(70), mapY(86));
+        ctx.lineTo(mapX(43), mapY(86));
+        ctx.closePath();
+        ctx.fill();
       }
 
       ctx.restore();

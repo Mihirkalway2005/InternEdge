@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- InternEdge Precision Geometric Symbol (I E Monogram) -->
+  <g fill="#FFFFFF">
+    <!-- Left Pillar 'I' -->
+    <path d="M 14 14 H 30 V 86 H 14 Z" />
+    <!-- Top Arm of 'E' with parallel 45° chamfer cut -->
+    <path d="M 43 14 H 86 L 70 30 H 43 Z" />
+    <!-- Middle Arm of 'E' -->
+    <path d="M 43 42 H 68 V 58 H 43 Z" />
+    <!-- Bottom Arm of 'E' with parallel 45° chamfer cut -->
+    <path d="M 43 70 H 86 L 70 86 H 43 Z" />
+  </g>
+</svg>

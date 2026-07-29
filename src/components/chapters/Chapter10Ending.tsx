@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { LiquidMetalCanvas } from '../canvas/LiquidMetalCanvas';
 import { ArrowUp } from 'lucide-react';
+import { InternEdgeIcon } from '../brand/InternEdgeLogo';
 
 interface Chapter10Props {
   onRestartKeynote: () => void;
@@ -19,9 +20,9 @@ export const Chapter10Ending: React.FC<Chapter10Props> = ({ onRestartKeynote }) 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-          className="w-16 h-16 rounded-2xl material-glass border border-white/20 flex items-center justify-center font-bold text-2xl text-white mx-auto shadow-2xl"
+          className="flex justify-center"
         >
-          IE
+          <InternEdgeIcon variant="liquid-glass" size={64} />
         </motion.div>
 
         {/* Final Statement Headline */}

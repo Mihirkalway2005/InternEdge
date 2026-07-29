@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize2, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { InternEdgeIcon } from '../brand/InternEdgeLogo';
 
 interface KeynoteNavProps {
   currentChapterIndex: number;
@@ -47,9 +48,7 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
             onClick={() => onSelectChapter(0)}
             className="flex items-center gap-2 cursor-pointer group"
           >
-            <div className="w-6 h-6 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-xs font-bold text-white group-hover:bg-white group-hover:text-black transition-all">
-              IE
-            </div>
+            <InternEdgeIcon variant="squircle" size={24} />
             <span className="font-semibold text-xs tracking-wider text-white uppercase hidden sm:inline">
               InternEdge
             </span>

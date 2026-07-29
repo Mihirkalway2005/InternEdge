@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 120" width="600" height="120">
+  <defs>
+    <style>
+      .wordmark { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Geist", "Inter", sans-serif; font-weight: 600; font-size: 32px; letter-spacing: 0.35em; fill: #FFFFFF; }
+      .tagline { font-family: "SF Mono", "Geist Mono", monospace; font-weight: 400; font-size: 11px; letter-spacing: 0.25em; fill: #888888; }
+    </style>
+  </defs>
+
+  <!-- IE Icon Emblem -->
+  <g transform="translate(10, 10) scale(1.0)" fill="#FFFFFF">
+    <path d="M 14 14 H 30 V 86 H 14 Z" />
+    <path d="M 43 14 H 86 L 70 30 H 43 Z" />
+    <path d="M 43 42 H 68 V 58 H 43 Z" />
+    <path d="M 43 70 H 86 L 70 86 H 43 Z" />
+  </g>
+
+  <!-- Wordmark -->
+  <text x="140" y="60" className="wordmark" class="wordmark">INTERNEDGE</text>
+  <text x="142" y="88" className="tagline" class="tagline">DISCOVER • PREPARE • CONNECT • SUCCEED</text>
+</svg>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { InternEdgeIcon } from '../brand/InternEdgeLogo';
 
 interface HeaderNavProps {
   activeSectionIndex: number;
@@ -51,9 +52,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 onClick={() => onScrollToSection(0)}
                 className="flex items-center gap-2 cursor-pointer group"
               >
-                <div className="w-6 h-6 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-xs font-bold text-white group-hover:bg-white group-hover:text-black transition-all">
-                  IE
-                </div>
+                <InternEdgeIcon variant="squircle" size={24} />
                 <span className="font-semibold text-xs tracking-wider text-white uppercase hidden sm:inline">
                   InternEdge
                 </span>

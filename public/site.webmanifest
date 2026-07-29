@@ -1,0 +1,16 @@
+{
+  "name": "InternEdge",
+  "short_name": "InternEdge",
+  "description": "Streamline your internship journey with an AI-powered platform that helps students discover opportunities, optimize resumes, and prepare for interviews.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

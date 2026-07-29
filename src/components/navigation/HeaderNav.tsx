@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

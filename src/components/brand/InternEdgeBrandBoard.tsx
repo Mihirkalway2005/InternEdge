@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { InternEdgeIcon, InternEdgeWordmark, InternEdgeLogo } from './InternEdgeLogo';
 

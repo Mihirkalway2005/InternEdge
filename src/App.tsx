@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useKeynoteAudio } from './hooks/useKeynoteAudio';
 import { HeaderNav } from './components/navigation/HeaderNav';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useRef, useState } from 'react';
 
 export function useKeynoteAudio() {
@@ -5,6 +7,7 @@ export function useKeynoteAudio() {
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   const getAudioContext = useCallback(() => {
+    if (typeof window === 'undefined') return null;
     if (!audioCtxRef.current) {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) {

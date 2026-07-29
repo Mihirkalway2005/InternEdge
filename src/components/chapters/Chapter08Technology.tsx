@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Cpu, Database, Network, ShieldCheck, Zap, ArrowRight } from 'lucide-react';

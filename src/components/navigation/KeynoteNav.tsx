@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize2, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

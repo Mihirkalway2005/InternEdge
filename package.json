@@ -7,9 +7,11 @@
     "dev": "next dev -p ${PORT:-8443}",
     "build": "next build",
     "start": "next start -p ${PORT:-8443}",
+    "lint": "oxfmt --check",
     "format": "oxfmt"
   },
   "dependencies": {
+    "better-auth": "^1.6.25",
     "clsx": "^2.1.1",
     "convex": "^1.42.3",
     "framer-motion": "^12.42.2",
@@ -24,6 +26,8 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "eslint": "^10.8.0",
+    "eslint-config-next": "^16.2.12",
     "oxfmt": "^0.2.0",
     "postcss": "^8.5.0",
     "tailwindcss": "^4.0.0",

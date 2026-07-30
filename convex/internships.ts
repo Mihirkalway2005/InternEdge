@@ -1,6 +1,6 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
-import { workTypeValidator } from "./lib/validators";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
+import { workTypeValidator } from "./lib/validators"
 
 /**
  * Internships Table Schema
@@ -19,4 +19,4 @@ export const internshipsTable = defineTable({
 })
   .index("by_company", ["companyId"])
   .index("by_location", ["location"])
-  .index("by_deadline", ["deadline"]);
+  .index("by_deadline", ["deadline"])

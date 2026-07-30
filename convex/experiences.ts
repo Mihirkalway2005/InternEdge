@@ -1,5 +1,5 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
 
 /**
  * Experiences Table Schema
@@ -12,4 +12,4 @@ export const experiencesTable = defineTable({
   description: v.string(),
   startDate: v.string(),
   endDate: v.optional(v.string()),
-}).index("by_user", ["userId"]);
+}).index("by_user", ["userId"])

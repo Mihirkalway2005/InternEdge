@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { v } from "convex/values"
 
 /**
  * Reusable Convex Validators for InternEdge Schema.
@@ -9,14 +9,14 @@ export const roleValidator = v.union(
   v.literal("student"),
   v.literal("admin"),
   v.literal("mentor"),
-  v.literal("placement_cell")
-);
+  v.literal("placement_cell"),
+)
 
 export const workTypeValidator = v.union(
   v.literal("remote"),
   v.literal("hybrid"),
-  v.literal("onsite")
-);
+  v.literal("onsite"),
+)
 
 export const applicationStatusValidator = v.union(
   v.literal("saved"),
@@ -25,8 +25,8 @@ export const applicationStatusValidator = v.union(
   v.literal("interview"),
   v.literal("hr"),
   v.literal("offer"),
-  v.literal("rejected")
-);
+  v.literal("rejected"),
+)
 
 export const skillCategoryValidator = v.union(
   v.literal("frontend"),
@@ -35,30 +35,30 @@ export const skillCategoryValidator = v.union(
   v.literal("devops"),
   v.literal("ai_ml"),
   v.literal("soft_skill"),
-  v.literal("other")
-);
+  v.literal("other"),
+)
 
 export const skillLevelValidator = v.union(
   v.literal("beginner"),
   v.literal("intermediate"),
   v.literal("advanced"),
-  v.literal("expert")
-);
+  v.literal("expert"),
+)
 
 export const interviewTrackValidator = v.union(
   v.literal("technical"),
   v.literal("hr"),
   v.literal("behavioral"),
-  v.literal("coding")
-);
+  v.literal("coding"),
+)
 
 export const notificationTypeValidator = v.union(
   v.literal("deadline"),
   v.literal("roadmap"),
   v.literal("interview"),
   v.literal("resume"),
-  v.literal("system")
-);
+  v.literal("system"),
+)
 
 export const interviewQuestionValidator = v.object({
   question: v.string(),
@@ -66,4 +66,4 @@ export const interviewQuestionValidator = v.object({
   score: v.optional(v.number()),
   feedback: v.optional(v.string()),
   modelAnswer: v.optional(v.string()),
-});
+})

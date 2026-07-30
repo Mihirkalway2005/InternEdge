@@ -1,6 +1,6 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
-import { applicationStatusValidator } from "./lib/validators";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
+import { applicationStatusValidator } from "./lib/validators"
 
 /**
  * Applications Table Schema
@@ -16,4 +16,4 @@ export const applicationsTable = defineTable({
 })
   .index("by_user", ["userId"])
   .index("by_status", ["status"])
-  .index("by_internship", ["internshipId"]);
+  .index("by_internship", ["internshipId"])

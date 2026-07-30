@@ -1,5 +1,5 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
 
 /**
  * Roadmap Tasks Table Schema
@@ -8,6 +8,10 @@ import { v } from "convex/values";
 export const roadmapTasksTable = defineTable({
   roadmapId: v.id("roadmaps"),
   title: v.string(),
-  week: v.number(),
+  description: v.optional(v.string()),
+  week: v.optional(v.number()),
+  dueDate: v.optional(v.number()),
+  category: v.optional(v.string()),
   completed: v.boolean(),
-}).index("by_roadmap", ["roadmapId"]);
+  isCompleted: v.optional(v.boolean()),
+}).index("by_roadmap", ["roadmapId"])

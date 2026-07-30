@@ -1,33 +1,41 @@
-'use client';
-
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { LiquidMetalCanvas } from '../canvas/LiquidMetalCanvas';
-import { Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react';
+"use client" /* Signature Liquid Metal Canvas Background */ /* Chapter Text Header */ /* Interactive Melt Trigger Button */ /* Animation Area: Isolated Cards -> Liquid Coalescence -> Unified Dashboard */
+/* Pre-melt or Melting Card Group */
+/* Post-melt Cohesive Unified Operating System Interface */
+import React, { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { LiquidMetalCanvas } from "../canvas/LiquidMetalCanvas"
+import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react"
 
 interface Chapter04Props {
-  onProceed: () => void;
-  onAudioMorph?: () => void;
+  onProceed: () => void
+  onAudioMorph?: () => void
 }
 
-export const Chapter04Transformation: React.FC<Chapter04Props> = ({ onProceed, onAudioMorph }) => {
-  const [isMelting, setIsMelting] = useState(false);
-  const [isUnified, setIsUnified] = useState(false);
+export const Chapter04Transformation: React.FC<Chapter04Props> = ({
+  onProceed,
+  onAudioMorph,
+}) => {
+  const [isMelting, setIsMelting] = useState(false)
+  const [isUnified, setIsUnified] = useState(false)
 
   const handleStartMelt = () => {
-    setIsMelting(true);
-    if (onAudioMorph) onAudioMorph();
+    setIsMelting(true)
+    if (onAudioMorph) onAudioMorph()
     setTimeout(() => {
-      setIsUnified(true);
-    }, 2000);
-  };
+      setIsUnified(true)
+    }, 2000)
+  }
 
   return (
     <section className="relative w-full min-h-screen bg-[#050505] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
-      {/* Signature Liquid Metal Canvas Background */}
-      <LiquidMetalCanvas activeProgress={1} isAttracting={isMelting} className="z-10" />
+      {}
+      <LiquidMetalCanvas
+        activeProgress={1}
+        isAttracting={isMelting}
+        className="z-10"
+      />
 
-      {/* Chapter Text Header */}
+      {}
       <div className="relative z-30 text-center max-w-4xl mx-auto space-y-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -55,10 +63,11 @@ export const Chapter04Transformation: React.FC<Chapter04Props> = ({ onProceed, o
           transition={{ duration: 1, delay: 0.2 }}
           className="text-lg md:text-xl text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed"
         >
-          Watch how InternEdge pulls every isolated workflow into a single, cohesive metallic architecture.
+          Watch how InternEdge pulls every isolated workflow into a single,
+          cohesive metallic architecture.
         </motion.p>
 
-        {/* Interactive Melt Trigger Button */}
+        {}
         {!isUnified && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -70,25 +79,33 @@ export const Chapter04Transformation: React.FC<Chapter04Props> = ({ onProceed, o
               disabled={isMelting}
               className="px-8 py-4 rounded-full bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-all shadow-2xl flex items-center gap-3 mx-auto disabled:opacity-50"
             >
-              <span>{isMelting ? 'Attracting & Melting Platforms...' : 'Initiate Liquid Transformation'}</span>
+              <span>
+                {isMelting
+                  ? "Attracting & Melting Platforms..."
+                  : "Initiate Liquid Transformation"}
+              </span>
               <ArrowRight size={16} />
             </button>
           </motion.div>
         )}
       </div>
 
-      {/* Animation Area: Isolated Cards -> Liquid Coalescence -> Unified Dashboard */}
+      {}
       <div className="relative z-30 w-full max-w-5xl h-[420px] mt-12 flex items-center justify-center">
         <AnimatePresence mode="wait">
           {!isUnified ? (
-            /* Pre-melt or Melting Card Group */
             <motion.div
               key="fragmented"
-              exit={{ opacity: 0, scale: 0.4, filter: 'blur(20px)' }}
+              exit={{ opacity: 0, scale: 0.4, filter: "blur(20px)" }}
               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
               className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full px-6"
             >
-              {['LinkedIn DM Engine', 'Google Drive ATS', 'Calendar Sync', 'LeetCode Graph'].map((item, idx) => (
+              {[
+                "LinkedIn DM Engine",
+                "Google Drive ATS",
+                "Calendar Sync",
+                "LeetCode Graph",
+              ].map((item, idx) => (
                 <motion.div
                   key={idx}
                   animate={
@@ -110,13 +127,16 @@ export const Chapter04Transformation: React.FC<Chapter04Props> = ({ onProceed, o
                   <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-mono text-white text-xs font-bold">
                     0{idx + 1}
                   </div>
-                  <span className="text-sm font-semibold text-white">{item}</span>
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase">Isolated Node</span>
+                  <span className="text-sm font-semibold text-white">
+                    {item}
+                  </span>
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">
+                    Isolated Node
+                  </span>
                 </motion.div>
               ))}
             </motion.div>
           ) : (
-            /* Post-melt Cohesive Unified Operating System Interface */
             <motion.div
               key="unified"
               initial={{ opacity: 0, scale: 0.85, y: 30 }}
@@ -130,8 +150,12 @@ export const Chapter04Transformation: React.FC<Chapter04Props> = ({ onProceed, o
                     IE
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white">InternEdge Operating System</h3>
-                    <p className="text-[10px] font-mono text-zinc-400">All 8 Core Workflows Synchronized</p>
+                    <h3 className="text-sm font-bold text-white">
+                      InternEdge Operating System
+                    </h3>
+                    <p className="text-[10px] font-mono text-zinc-400">
+                      All 8 Core Workflows Synchronized
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-green-400 font-mono">
@@ -141,21 +165,39 @@ export const Chapter04Transformation: React.FC<Chapter04Props> = ({ onProceed, o
               </div>
 
               <div className="col-span-4 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-between">
-                <span className="text-[10px] font-mono text-zinc-400 uppercase">AUTOMATED APPLICATIONS</span>
-                <span className="text-3xl font-extrabold text-white font-mono">42 Active</span>
-                <span className="text-[10px] text-zinc-500 font-mono">Auto-synced across 12 portals</span>
+                <span className="text-[10px] font-mono text-zinc-400 uppercase">
+                  AUTOMATED APPLICATIONS
+                </span>
+                <span className="text-3xl font-extrabold text-white font-mono">
+                  42 Active
+                </span>
+                <span className="text-[10px] text-zinc-500 font-mono">
+                  Auto-synced across 12 portals
+                </span>
               </div>
 
               <div className="col-span-4 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-between">
-                <span className="text-[10px] font-mono text-zinc-400 uppercase">INTERVIEW CONFIDENCE</span>
-                <span className="text-3xl font-extrabold text-white font-mono">94% Rank</span>
-                <span className="text-[10px] text-cyan-400 font-mono">Verified by AI Mock Rounds</span>
+                <span className="text-[10px] font-mono text-zinc-400 uppercase">
+                  INTERVIEW CONFIDENCE
+                </span>
+                <span className="text-3xl font-extrabold text-white font-mono">
+                  94% Rank
+                </span>
+                <span className="text-[10px] text-cyan-400 font-mono">
+                  Verified by AI Mock Rounds
+                </span>
               </div>
 
               <div className="col-span-4 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-between">
-                <span className="text-[10px] font-mono text-zinc-400 uppercase">SCHEDULED RECRUITER MEETS</span>
-                <span className="text-3xl font-extrabold text-white font-mono">6 Confirmed</span>
-                <span className="text-[10px] text-emerald-400 font-mono">Zero Calendar Conflicts</span>
+                <span className="text-[10px] font-mono text-zinc-400 uppercase">
+                  SCHEDULED RECRUITER MEETS
+                </span>
+                <span className="text-3xl font-extrabold text-white font-mono">
+                  6 Confirmed
+                </span>
+                <span className="text-[10px] text-emerald-400 font-mono">
+                  Zero Calendar Conflicts
+                </span>
               </div>
 
               <div className="col-span-12 pt-4 flex justify-end">
@@ -172,5 +214,5 @@ export const Chapter04Transformation: React.FC<Chapter04Props> = ({ onProceed, o
         </AnimatePresence>
       </div>
     </section>
-  );
-};
+  )
+}

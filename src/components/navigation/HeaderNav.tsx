@@ -1,16 +1,17 @@
-'use client';
+"use client" /* Brand Logo Monogram */ /* Active Section Tracker */ /* Actions */ /* Audio Synthesizer Toggle */ /* Open Platform CTA */ /* Early Access Modal */
+import React, { useState, useEffect } from "react"
+import { Volume2, VolumeX, ArrowUpRight } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { InternEdgeIcon } from "../brand/InternEdgeLogo"
 
-import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, ArrowUpRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { InternEdgeIcon } from '../brand/InternEdgeLogo';
+import Link from "next/link"
 
 interface HeaderNavProps {
-  activeSectionIndex: number;
-  sectionTitles: string[];
-  isMuted: boolean;
-  onToggleMute: () => void;
-  onScrollToSection: (index: number) => void;
+  activeSectionIndex: number
+  sectionTitles: string[]
+  isMuted: boolean
+  onToggleMute: () => void
+  onScrollToSection: (index: number) => void
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -20,22 +21,21 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onToggleMute,
   onScrollToSection,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false)
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show navbar after scrolling past top 150px
       if (window.scrollY > 150) {
-        setIsVisible(true);
+        setIsVisible(true)
       } else {
-        setIsVisible(false);
+        setIsVisible(false)
       }
-    };
+    }
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   return (
     <>
@@ -49,8 +49,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             className="fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all"
           >
             <div className="flex items-center gap-4 px-5 py-2.5 rounded-full material-glass border border-white/10 shadow-2xl backdrop-blur-2xl">
-              {/* Brand Logo Monogram */}
-              <div 
+              {}
+              <div
                 onClick={() => onScrollToSection(0)}
                 className="flex items-center gap-2 cursor-pointer group"
               >
@@ -62,7 +62,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
               <div className="h-4 w-px bg-white/10" />
 
-              {/* Active Section Tracker */}
+              {}
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">
                   0{activeSectionIndex + 1}
@@ -74,32 +74,35 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
               <div className="h-4 w-px bg-white/10" />
 
-              {/* Actions */}
+              {}
               <div className="flex items-center gap-2">
-                {/* Audio Synthesizer Toggle */}
+                {}
                 <button
                   onClick={onToggleMute}
                   className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
                   title={isMuted ? "Unmute Audio (M)" : "Mute Audio (M)"}
                 >
-                  {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} className="text-cyan-400" />}
+                  {isMuted ? (
+                    <VolumeX size={14} />
+                  ) : (
+                    <Volume2 size={14} className="text-cyan-400" />
+                  )}
                 </button>
 
-                {/* Early Access CTA */}
-                <button
-                  onClick={() => setIsAccessModalOpen(true)}
-                  className="px-3.5 py-1.5 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition-all flex items-center gap-1 shadow-lg"
-                >
-                  <span>Early Access</span>
-                  <ArrowUpRight size={12} />
-                </button>
+                {}
+                <Link href="/dashboard">
+                  <button className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-black font-semibold text-xs hover:opacity-90 transition-all flex items-center gap-1 shadow-lg">
+                    <span>Open Platform</span>
+                    <ArrowUpRight size={12} />
+                  </button>
+                </Link>
               </div>
             </div>
           </motion.nav>
         )}
       </AnimatePresence>
 
-      {/* Early Access Modal */}
+      {}
       <AnimatePresence>
         {isAccessModalOpen && (
           <motion.div
@@ -118,8 +121,12 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-xl font-bold text-white">InternEdge Early Access</h3>
-                  <p className="text-xs text-zinc-400 mt-1">Join the waitlist for Early Access Release 2.6</p>
+                  <h3 className="text-xl font-bold text-white">
+                    InternEdge Early Access
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Join the waitlist for Early Access Release 2.6
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsAccessModalOpen(false)}
@@ -131,9 +138,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
               <form
                 onSubmit={(e) => {
-                  e.preventDefault();
-                  alert("Thank you! Early Access request received.");
-                  setIsAccessModalOpen(false);
+                  e.preventDefault()
+                  alert("Thank you! Early Access request received.")
+                  setIsAccessModalOpen(false)
                 }}
                 className="space-y-4"
               >
@@ -155,5 +162,5 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         )}
       </AnimatePresence>
     </>
-  );
-};
+  )
+}

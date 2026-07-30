@@ -1,5 +1,5 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
 
 /**
  * Resumes Table Schema
@@ -14,4 +14,4 @@ export const resumesTable = defineTable({
   missingKeywords: v.array(v.string()),
   version: v.number(),
   isPrimary: v.boolean(),
-}).index("by_user", ["userId"]);
+}).index("by_user", ["userId"])

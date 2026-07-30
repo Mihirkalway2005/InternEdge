@@ -1,6 +1,6 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
-import { skillCategoryValidator, skillLevelValidator } from "./lib/validators";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
+import { skillCategoryValidator, skillLevelValidator } from "./lib/validators"
 
 /**
  * Skills Table Schema
@@ -12,4 +12,4 @@ export const skillsTable = defineTable({
   category: skillCategoryValidator,
   level: skillLevelValidator,
   verified: v.boolean(),
-}).index("by_user", ["userId"]);
+}).index("by_user", ["userId"])

@@ -1,23 +1,28 @@
-'use client';
-
-import React from 'react';
-import { motion } from 'framer-motion';
-import { LiquidMetalCanvas } from '../canvas/LiquidMetalCanvas';
-import { ArrowUp } from 'lucide-react';
-import { InternEdgeIcon } from '../brand/InternEdgeLogo';
+"use client" /* Liquid Glass / Mercury canvas background */ /* Emblem Logo */ /* Final Statement Headline */ /* Back to Top Scroll Button */
+import React from "react"
+import { motion } from "framer-motion"
+import { LiquidMetalCanvas } from "../canvas/LiquidMetalCanvas"
+import { ArrowUp } from "lucide-react"
+import { InternEdgeIcon } from "../brand/InternEdgeLogo"
 
 interface Chapter10Props {
-  onRestartKeynote: () => void;
+  onRestartKeynote: () => void
 }
 
-export const Chapter10Ending: React.FC<Chapter10Props> = ({ onRestartKeynote }) => {
+export const Chapter10Ending: React.FC<Chapter10Props> = ({
+  onRestartKeynote,
+}) => {
   return (
     <section className="relative w-full h-screen bg-[#050505] flex flex-col items-center justify-center px-6 overflow-hidden">
-      {/* Liquid Glass / Mercury canvas background */}
-      <LiquidMetalCanvas activeProgress={0.4} isAttracting={false} className="z-10 opacity-30" />
+      {}
+      <LiquidMetalCanvas
+        activeProgress={0.4}
+        isAttracting={false}
+        className="z-10 opacity-30"
+      />
 
       <div className="relative z-30 text-center max-w-3xl mx-auto space-y-8">
-        {/* Emblem Logo */}
+        {}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -27,7 +32,7 @@ export const Chapter10Ending: React.FC<Chapter10Props> = ({ onRestartKeynote }) 
           <InternEdgeIcon variant="liquid-glass" size={64} />
         </motion.div>
 
-        {/* Final Statement Headline */}
+        {}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -37,7 +42,7 @@ export const Chapter10Ending: React.FC<Chapter10Props> = ({ onRestartKeynote }) 
           OWN EVERY <br /> OPPORTUNITY.
         </motion.h1>
 
-        {/* Back to Top Scroll Button */}
+        {}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -54,5 +59,5 @@ export const Chapter10Ending: React.FC<Chapter10Props> = ({ onRestartKeynote }) 
         </motion.div>
       </div>
     </section>
-  );
-};
+  )
+}

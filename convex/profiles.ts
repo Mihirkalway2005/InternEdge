@@ -1,5 +1,5 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
 
 /**
  * Profiles Table Schema
@@ -7,13 +7,15 @@ import { v } from "convex/values";
  */
 export const profilesTable = defineTable({
   userId: v.id("users"),
-  university: v.string(),
-  degree: v.string(),
-  branch: v.string(),
-  graduationYear: v.number(),
+  headline: v.optional(v.string()),
+  university: v.optional(v.string()),
+  education: v.optional(v.string()),
+  degree: v.optional(v.string()),
+  branch: v.optional(v.string()),
+  graduationYear: v.optional(v.number()),
   bio: v.optional(v.string()),
   github: v.optional(v.string()),
   linkedin: v.optional(v.string()),
   portfolio: v.optional(v.string()),
   careerGoal: v.optional(v.string()),
-}).index("by_user", ["userId"]);
+}).index("by_user", ["userId"])

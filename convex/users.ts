@@ -1,6 +1,6 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
-import { roleValidator } from "./lib/validators";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
+import { roleValidator } from "./lib/validators"
 
 /**
  * Users Table Schema
@@ -13,4 +13,4 @@ export const usersTable = defineTable({
   role: roleValidator,
   createdAt: v.number(),
   updatedAt: v.number(),
-}).index("by_email", ["email"]);
+}).index("by_email", ["email"])

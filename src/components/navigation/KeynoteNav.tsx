@@ -1,19 +1,18 @@
-'use client';
-
-import React, { useState } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize2, Layers } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { InternEdgeIcon } from '../brand/InternEdgeLogo';
+"use client" /* Floating frosted glass pill */ /* Logo Monogram */ /* Active Chapter Label */ /* Quick Controls */ /* Play/Pause Keynote Slideshow */ /* Audio Toggle */ /* Chapter Selection Drawer Toggle */ /* Fullscreen Toggle */ /* Progress bar line under pill */ /* Chapter Selection Drawer Modal */
+import React, { useState } from "react"
+import { Play, Pause, Volume2, VolumeX, Maximize2, Layers } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { InternEdgeIcon } from "../brand/InternEdgeLogo"
 
 interface KeynoteNavProps {
-  currentChapterIndex: number;
-  totalChapters: number;
-  chapterTitles: string[];
-  isPlaying: boolean;
-  isMuted: boolean;
-  onSelectChapter: (index: number) => void;
-  onTogglePlay: () => void;
-  onToggleMute: () => void;
+  currentChapterIndex: number
+  totalChapters: number
+  chapterTitles: string[]
+  isPlaying: boolean
+  isMuted: boolean
+  onSelectChapter: (index: number) => void
+  onTogglePlay: () => void
+  onToggleMute: () => void
 }
 
 export const KeynoteNav: React.FC<KeynoteNavProps> = ({
@@ -26,27 +25,27 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
   onTogglePlay,
   onToggleMute,
 }) => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+      document.documentElement.requestFullscreen().catch(() => {})
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
+        document.exitFullscreen().catch(() => {})
       }
     }
-  };
+  }
 
-  const progressPct = ((currentChapterIndex + 1) / totalChapters) * 100;
+  const progressPct = ((currentChapterIndex + 1) / totalChapters) * 100
 
   return (
     <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-700">
       <div className="relative">
-        {/* Floating frosted glass pill */}
+        {}
         <div className="flex items-center gap-4 px-5 py-2.5 rounded-full material-glass border border-white/10 shadow-2xl backdrop-blur-xl">
-          {/* Logo Monogram */}
-          <div 
+          {}
+          <div
             onClick={() => onSelectChapter(0)}
             className="flex items-center gap-2 cursor-pointer group"
           >
@@ -58,7 +57,7 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
 
           <div className="h-4 w-px bg-white/10" />
 
-          {/* Active Chapter Label */}
+          {}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">
               0{currentChapterIndex + 1}
@@ -70,27 +69,37 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
 
           <div className="h-4 w-px bg-white/10" />
 
-          {/* Quick Controls */}
+          {}
           <div className="flex items-center gap-1.5">
-            {/* Play/Pause Keynote Slideshow */}
+            {}
             <button
               onClick={onTogglePlay}
               className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
-              title={isPlaying ? "Pause Keynote Presentation (Space)" : "Play Keynote Slideshow (Space)"}
+              title={
+                isPlaying
+                  ? "Pause Keynote Presentation (Space)"
+                  : "Play Keynote Slideshow (Space)"
+              }
             >
               {isPlaying ? <Pause size={14} /> : <Play size={14} />}
             </button>
 
-            {/* Audio Toggle */}
+            {}
             <button
               onClick={onToggleMute}
               className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
-              title={isMuted ? "Unmute Keynote Audio (M)" : "Mute Keynote Audio (M)"}
+              title={
+                isMuted ? "Unmute Keynote Audio (M)" : "Mute Keynote Audio (M)"
+              }
             >
-              {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} className="text-cyan-400" />}
+              {isMuted ? (
+                <VolumeX size={14} />
+              ) : (
+                <Volume2 size={14} className="text-cyan-400" />
+              )}
             </button>
 
-            {/* Chapter Selection Drawer Toggle */}
+            {}
             <button
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
               className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -99,7 +108,7 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
               <Layers size={14} />
             </button>
 
-            {/* Fullscreen Toggle */}
+            {}
             <button
               onClick={toggleFullscreen}
               className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors hidden md:block"
@@ -110,7 +119,7 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
           </div>
         </div>
 
-        {/* Progress bar line under pill */}
+        {}
         <div className="absolute -bottom-1 left-4 right-4 h-[2px] bg-white/5 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-white to-zinc-400 transition-all duration-500"
@@ -118,7 +127,7 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
           />
         </div>
 
-        {/* Chapter Selection Drawer Modal */}
+        {}
         <AnimatePresence>
           {isDrawerOpen && (
             <motion.div
@@ -135,17 +144,19 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
                 <button
                   key={idx}
                   onClick={() => {
-                    onSelectChapter(idx);
-                    setIsDrawerOpen(false);
+                    onSelectChapter(idx)
+                    setIsDrawerOpen(false)
                   }}
                   className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-left transition-all ${
                     currentChapterIndex === idx
-                      ? 'bg-white/15 text-white font-semibold'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                      ? "bg-white/15 text-white font-semibold"
+                      : "text-zinc-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] text-zinc-500">0{idx + 1}</span>
+                    <span className="font-mono text-[10px] text-zinc-500">
+                      0{idx + 1}
+                    </span>
                     <span>{title}</span>
                   </span>
                   {currentChapterIndex === idx && (
@@ -158,5 +169,5 @@ export const KeynoteNav: React.FC<KeynoteNavProps> = ({
         </AnimatePresence>
       </div>
     </nav>
-  );
-};
+  )
+}

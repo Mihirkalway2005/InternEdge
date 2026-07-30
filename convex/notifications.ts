@@ -1,6 +1,6 @@
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
-import { notificationTypeValidator } from "./lib/validators";
+import { defineTable } from "convex/server"
+import { v } from "convex/values"
+import { notificationTypeValidator } from "./lib/validators"
 
 /**
  * Notifications Table Schema
@@ -13,4 +13,4 @@ export const notificationsTable = defineTable({
   type: notificationTypeValidator,
   read: v.boolean(),
   createdAt: v.number(),
-}).index("by_user", ["userId"]);
+}).index("by_user", ["userId"])

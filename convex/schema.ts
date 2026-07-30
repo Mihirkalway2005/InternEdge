@@ -1,17 +1,18 @@
-import { defineSchema } from "convex/server";
-import { usersTable } from "./users";
-import { profilesTable } from "./profiles";
-import { skillsTable } from "./skills";
-import { projectsTable } from "./projects";
-import { experiencesTable } from "./experiences";
-import { companiesTable } from "./companies";
-import { internshipsTable } from "./internships";
-import { resumesTable } from "./resumes";
-import { applicationsTable } from "./applications";
-import { roadmapsTable } from "./roadmaps";
-import { roadmapTasksTable } from "./roadmapTasks";
-import { interviewsTable } from "./interviews";
-import { notificationsTable } from "./notifications";
+import { defineSchema } from "convex/server"
+import { usersTable } from "./users"
+import { profilesTable } from "./profiles"
+import { skillsTable } from "./skills"
+import { projectsTable } from "./projects"
+import { experiencesTable } from "./experiences"
+import { companiesTable } from "./companies"
+import { internshipsTable } from "./internships"
+import { resumesTable } from "./resumes"
+import { applicationsTable } from "./applications"
+import { roadmapsTable } from "./roadmaps"
+import { roadmapTasksTable } from "./roadmapTasks"
+import { interviewsTable } from "./interviews"
+import { notificationsTable } from "./notifications"
+import { activityLogsTable } from "./activityLogs"
 
 /**
  * InternEdge Production Database Schema
@@ -31,4 +32,5 @@ export default defineSchema({
   roadmapTasks: roadmapTasksTable,
   interviews: interviewsTable,
   notifications: notificationsTable,
-});
+  activityLogs: activityLogsTable,
+})

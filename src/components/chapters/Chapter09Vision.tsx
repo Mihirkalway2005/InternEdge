@@ -1,48 +1,54 @@
-'use client';
-
-import React from 'react';
-import { motion } from 'framer-motion';
-import { CausticBackground } from '../canvas/CausticBackground';
-import { Sparkles, Building2, GraduationCap, TrendingUp, Compass, ArrowRight } from 'lucide-react';
+"use client" /* Warm Champagne Gold Ambient Background */ /* Chapter Text Header */ /* 4 Ecosystem Pillars Grid */ /* CTA Button to Keynote Finale */
+import React from "react"
+import { motion } from "framer-motion"
+import { CausticBackground } from "../canvas/CausticBackground"
+import {
+  Sparkles,
+  Building2,
+  GraduationCap,
+  TrendingUp,
+  Compass,
+  ArrowRight,
+} from "lucide-react"
 
 interface Chapter09Props {
-  onProceed: () => void;
+  onProceed: () => void
 }
 
 const visionPillars = [
   {
-    title: 'Recruiter Direct Portal',
-    desc: 'Connecting top candidates directly with hiring managers using verified ATS scores and interview recordings.',
+    title: "Recruiter Direct Portal",
+    desc: "Connecting top candidates directly with hiring managers using verified ATS scores and interview recordings.",
     icon: Building2,
-    tag: 'Enterprise Ecosystem',
+    tag: "Enterprise Ecosystem",
   },
   {
-    title: 'University Placement Dashboard',
-    desc: 'Empowering university career centers with real-time candidate pipeline telemetry and placement analytics.',
+    title: "University Placement Dashboard",
+    desc: "Empowering university career centers with real-time candidate pipeline telemetry and placement analytics.",
     icon: GraduationCap,
-    tag: 'Academic Partner Network',
+    tag: "Academic Partner Network",
   },
   {
-    title: 'Macro Placement Intelligence',
-    desc: 'Benchmarking compensation, interview difficulty, and hiring trends across 10,000+ tech & finance roles.',
+    title: "Macro Placement Intelligence",
+    desc: "Benchmarking compensation, interview difficulty, and hiring trends across 10,000+ tech & finance roles.",
     icon: TrendingUp,
-    tag: 'Industry Benchmark Engine',
+    tag: "Industry Benchmark Engine",
   },
   {
-    title: 'Lifelong AI Career Mentor',
-    desc: 'Guiding your career progression seamlessly from intern to return offer, full-time transition, and senior leadership.',
+    title: "Lifelong AI Career Mentor",
+    desc: "Guiding your career progression seamlessly from intern to return offer, full-time transition, and senior leadership.",
     icon: Compass,
-    tag: 'Career OS Expansion',
+    tag: "Career OS Expansion",
   },
-];
+]
 
 export const Chapter09Vision: React.FC<Chapter09Props> = ({ onProceed }) => {
   return (
     <section className="relative w-full min-h-screen bg-[#050505] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
-      {/* Warm Champagne Gold Ambient Background */}
+      {}
       <CausticBackground theme="gold" />
 
-      {/* Chapter Text Header */}
+      {}
       <div className="relative z-30 text-center max-w-4xl mx-auto space-y-6 mb-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -70,14 +76,16 @@ export const Chapter09Vision: React.FC<Chapter09Props> = ({ onProceed }) => {
           transition={{ duration: 1, delay: 0.2 }}
           className="text-lg md:text-xl text-zinc-300 font-light max-w-2xl mx-auto leading-relaxed"
         >
-          InternEdge extends beyond student application tracking into a universal career infrastructure connecting students, recruiters, and universities.
+          InternEdge extends beyond student application tracking into a
+          universal career infrastructure connecting students, recruiters, and
+          universities.
         </motion.p>
       </div>
 
-      {/* 4 Ecosystem Pillars Grid */}
+      {}
       <div className="relative z-30 w-full max-w-6xl grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {visionPillars.map((pillar, idx) => {
-          const Icon = pillar.icon;
+          const Icon = pillar.icon
           return (
             <motion.div
               key={idx}
@@ -100,7 +108,9 @@ export const Chapter09Vision: React.FC<Chapter09Props> = ({ onProceed }) => {
                   {pillar.tag}
                 </span>
 
-                <h3 className="text-lg font-bold text-white mb-3">{pillar.title}</h3>
+                <h3 className="text-lg font-bold text-white mb-3">
+                  {pillar.title}
+                </h3>
                 <p className="text-xs text-zinc-400 leading-relaxed font-light">
                   {pillar.desc}
                 </p>
@@ -111,11 +121,11 @@ export const Chapter09Vision: React.FC<Chapter09Props> = ({ onProceed }) => {
                 <span className="text-[#ECE3CE] font-bold">2026 ROADMAP</span>
               </div>
             </motion.div>
-          );
+          )
         })}
       </div>
 
-      {/* CTA Button to Keynote Finale */}
+      {}
       <motion.button
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -127,5 +137,5 @@ export const Chapter09Vision: React.FC<Chapter09Props> = ({ onProceed }) => {
         <ArrowRight size={16} />
       </motion.button>
     </section>
-  );
-};
+  )
+}

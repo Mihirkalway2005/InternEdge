@@ -988,7 +988,7 @@ async function main() {
     const created = await prisma.internship.create({
       data: {
         ...item,
-        workType: item.workType,
+        workType: item.workType as "remote" | "hybrid" | "onsite",
       },
     })
     insertedInternships.push(created)

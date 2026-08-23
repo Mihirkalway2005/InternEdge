@@ -1,5 +1,6 @@
 "use client" /* Page Header */ /* Progress Header Box */ /* Add Task Modal / Form */ /* Roadmap Tasks List */
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { apiJson } from "@/lib/api-client"
 import {
   Compass,
   CheckCircle2,
@@ -22,6 +23,7 @@ interface Task {
 }
 
 export default function RoadmapPage() {
+  const [roadmapId, setRoadmapId] = useState<string | null>(null)
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "t1",
@@ -34,9 +36,9 @@ export default function RoadmapPage() {
     },
     {
       id: "t2",
-      title: "Implement Real-time Convex Backend Mutations",
+      title: "Implement Real-time Prisma ORM Backend Mutations",
       description:
-        "Learn schema design, indexed queries, and real-time client sync with Convex DB.",
+        "Learn schema design, indexed queries, and real-time client sync with Prisma + PostgreSQL.",
       category: "Backend",
       completed: true,
       dueDate: "Today",
@@ -73,10 +75,45 @@ export default function RoadmapPage() {
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [showAddForm, setShowAddForm] = useState(false)
 
+  useEffect(() => {
+    let active = true
+    apiJson<any[]>("/api/roadmaps").then((data) => {
+      if (!active || !data || data.length === 0) return
+      const roadmap = data[0]
+      setRoadmapId(roadmap.id)
+      const mapped: Task[] = (roadmap.tasks ?? []).map((t: any) => ({
+        id: t.id,
+        title: t.title,
+        description: t.description ?? "",
+        category: t.category ?? "General",
+        completed: t.completed,
+        dueDate: t.dueDate
+          ? new Date(t.dueDate).toLocaleDateString()
+          : "Next Week",
+      }))
+      if (mapped.length > 0) setTasks(mapped)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   const toggleTask = (id: string) => {
+    let nextCompleted = false
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
+      prev.map((t) => {
+        if (t.id === id) {
+          nextCompleted = !t.completed
+          return { ...t, completed: !t.completed }
+        }
+        return t
+      }),
     )
+    if (id.startsWith("t")) return
+    apiJson(`/api/roadmap-tasks/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ completed: nextCompleted }),
+    })
   }
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -95,6 +132,26 @@ export default function RoadmapPage() {
     setTasks((prev) => [...prev, newTask])
     setNewTaskTitle("")
     setShowAddForm(false)
+
+    if (roadmapId) {
+      apiJson(`/api/roadmaps/${roadmapId}/tasks`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: newTask.title,
+          description: newTask.description,
+          category: newTask.category,
+          completed: false,
+        }),
+      }).then((created) => {
+        if (created) {
+          setTasks((prev) =>
+            prev.map((t) =>
+              t.id === newTask.id ? { ...t, id: (created as any).id } : t,
+            ),
+          )
+        }
+      })
+    }
   }
 
   const completedCount = tasks.filter((t) => t.completed).length

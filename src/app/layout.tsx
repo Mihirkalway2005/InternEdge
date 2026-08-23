@@ -1,5 +1,4 @@
 import "./globals.css"
-import { ConvexClientProvider } from "@/providers/ConvexClientProvider"
 import { AuthProvider } from "@/providers/AuthProvider"
 
 export const metadata = {
@@ -25,9 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased bg-[#050505] text-[#FAFAFA]">
-        <ConvexClientProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ConvexClientProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

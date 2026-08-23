@@ -3,6 +3,7 @@
 /* Active Interview Simulator Session */ /* Prompt Box */ /* User Answer Input */
 /* Real-Time AI Feedback Report */
 import React, { useState } from "react"
+import { apiJson } from "@/lib/api-client"
 import {
   Bot,
   Play,
@@ -42,6 +43,23 @@ export default function InterviewsPage() {
 
   const handleNext = () => {
     setShowFeedback(true)
+    apiJson("/api/interviews", {
+      method: "POST",
+      body: JSON.stringify({
+        track: selectedTrack,
+        title: `${selectedTrack} practice session`,
+        score: 94,
+        feedback: "Strong technical accuracy and keyword coverage.",
+        questions: [
+          {
+            question: currentQuestions[currentQuestionIndex],
+            userAnswer: userAnswer,
+            score: 94,
+            feedback: "Solid answer with good keyword coverage.",
+          },
+        ],
+      }),
+    })
   }
 
   return (

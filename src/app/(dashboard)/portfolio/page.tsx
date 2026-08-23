@@ -1,5 +1,6 @@
 "use client" /* Header Controls */ /* Live Portfolio Preview Box */ /* Hero Section */ /* Featured Projects Grid */
-import React from "react"
+import React, { useState, useEffect } from "react"
+import { apiJson } from "@/lib/api-client"
 import {
   Globe,
   ExternalLink,
@@ -11,6 +12,41 @@ import {
 import { motion } from "framer-motion"
 
 export default function PortfolioPage() {
+  const [projects, setProjects] = useState([
+    {
+      category: "Full-Stack & AI",
+      title: "InternEdge Career Engine",
+      description:
+        "AI-powered internship readiness platform built with Next.js 15 App Router, React 19, Tailwind CSS v4, and Prisma + PostgreSQL.",
+      tags: ["Next.js 15", "PostgreSQL", "TypeScript"],
+    },
+    {
+      category: "Deep Learning & Systems",
+      title: "CUDA Vector Search Indexer",
+      description:
+        "High-throughput GPU vector indexing engine utilizing HNSW multi-layer graphs and custom CUDA kernels for LLM RAG pipelines.",
+      tags: ["Python", "CUDA C++", "PyTorch"],
+    },
+  ])
+
+  useEffect(() => {
+    let active = true
+    apiJson<any[]>("/api/projects").then((data) => {
+      if (!active || !data || data.length === 0) return
+      setProjects(
+        data.map((p) => ({
+          category: p.techStack?.[0] ?? "Engineering",
+          title: p.title,
+          description: p.description,
+          tags: p.techStack ?? [],
+        })),
+      )
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {}
@@ -71,54 +107,32 @@ export default function PortfolioPage() {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 rounded-2xl material-titanium border border-white/10 space-y-3">
-              <span className="text-xs font-bold text-sky-400">
-                Full-Stack & AI
-              </span>
-              <h4 className="text-base font-bold text-white">
-                InternEdge Career Engine
-              </h4>
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                AI-powered internship readiness platform built with Next.js 15
-                App Router, React 19, Tailwind CSS v4, and Convex DB.
-              </p>
-              <div className="flex gap-1.5 pt-1">
-                <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-zinc-300">
-                  Next.js 15
+            {projects.map((project) => (
+              <div
+                key={project.title}
+                className="p-5 rounded-2xl material-titanium border border-white/10 space-y-3"
+              >
+                <span className="text-xs font-bold text-sky-400">
+                  {project.category}
                 </span>
-                <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-zinc-300">
-                  Convex DB
-                </span>
-                <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-zinc-300">
-                  TypeScript
-                </span>
+                <h4 className="text-base font-bold text-white">
+                  {project.title}
+                </h4>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  {project.description}
+                </p>
+                <div className="flex gap-1.5 pt-1">
+                  {project.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-zinc-300"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            <div className="p-5 rounded-2xl material-titanium border border-white/10 space-y-3">
-              <span className="text-xs font-bold text-purple-400">
-                Deep Learning & Systems
-              </span>
-              <h4 className="text-base font-bold text-white">
-                CUDA Vector Search Indexer
-              </h4>
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                High-throughput GPU vector indexing engine utilizing HNSW
-                multi-layer graphs and custom CUDA kernels for LLM RAG
-                pipelines.
-              </p>
-              <div className="flex gap-1.5 pt-1">
-                <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-zinc-300">
-                  Python
-                </span>
-                <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-zinc-300">
-                  CUDA C++
-                </span>
-                <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-zinc-300">
-                  PyTorch
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

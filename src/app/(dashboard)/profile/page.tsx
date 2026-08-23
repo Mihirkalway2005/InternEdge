@@ -1,6 +1,7 @@
 "use client" /* Header */ /* Personal Details */ /* Education */ /* Skills Vector */ /* Social Links */
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useAuth } from "@/providers/AuthProvider"
+import { apiJson } from "@/lib/api-client"
 import {
   User,
   GraduationCap,
@@ -27,13 +28,46 @@ export default function ProfilePage() {
   const [linkedin, setLinkedin] = useState("https://linkedin.com/in/alexrivera")
   const [portfolio, setPortfolio] = useState("https://alexrivera.dev")
   const [skills, setSkills] = useState(
-    "TypeScript, React 19, Next.js 15, Python, PyTorch, PostgreSQL, Convex DB, CUDA",
+    "TypeScript, React 19, Next.js 15, Python, PyTorch, PostgreSQL, Prisma ORM, CUDA",
   )
+
+  useEffect(() => {
+    let active = true
+    apiJson<any>("/api/profile").then((p) => {
+      if (!active || !p) return
+      if (p.headline) setHeadline(p.headline)
+      if (p.university) setEducation(p.university)
+      if (p.degree) setDegree(p.degree)
+      if (p.graduationYear) setGradYear(String(p.graduationYear))
+      if (p.github) setGithub(p.github)
+      if (p.linkedin) setLinkedin(p.linkedin)
+      if (p.portfolio) setPortfolio(p.portfolio)
+    })
+    apiJson<any[]>("/api/skills").then((list) => {
+      if (!active || !list || list.length === 0) return
+      setSkills(list.map((s) => s.name).join(", "))
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
+    apiJson("/api/profile", {
+      method: "PUT",
+      body: JSON.stringify({
+        headline,
+        university: education,
+        degree,
+        graduationYear: Number(gradYear) || undefined,
+        github,
+        linkedin,
+        portfolio,
+      }),
+    })
   }
 
   return (

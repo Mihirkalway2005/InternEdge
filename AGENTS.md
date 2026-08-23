@@ -11,10 +11,15 @@ A Next.js development server runs on `$PORT` (default 8443).
 
 ## Project Structure
 
-- `src/app/layout.tsx` - Next.js root layout; sets up document metadata, global CSS, and Convex client provider
+- `src/app/layout.tsx` - Next.js root layout; sets up document metadata, global CSS, and the auth provider
 - `src/app/page.tsx` - Main home page component mounting `src/App.tsx`
 - `src/app/globals.css` - Global CSS entrypoint and Tailwind CSS v4 import (`@import 'tailwindcss';`)
 - `src/App.tsx` - Primary Keynote presentation shell component
+- `src/app/api/` - REST API route handlers backed by Prisma + PostgreSQL
+- `prisma/schema.prisma` - Prisma data model (PostgreSQL)
+- `prisma.config.ts` - Prisma CLI config (datasource URL, migrations)
+- `src/lib/db.ts` - Prisma client singleton (driver adapter for Postgres)
+- `src/lib/auth.ts` - BetterAuth server config (Prisma adapter)
 - `package.json` - Project dependencies and Next.js build, development, and formatting scripts
 - `next.config.mjs` - Next.js configuration
 - `postcss.config.mjs` - PostCSS configuration with `@tailwindcss/postcss` plugin
@@ -23,7 +28,8 @@ A Next.js development server runs on `$PORT` (default 8443).
 
 - Runtime: Next.js 15, React 19, and React DOM 19
 - Styling: Tailwind CSS v4 with `@tailwindcss/postcss` plugin
-- Backend: Convex DB client SDK
+- Backend: Prisma ORM 7 + PostgreSQL (via `@prisma/adapter-pg`)
+- Auth: BetterAuth (Prisma adapter)
 - Formatting: oxfmt
 
 ## Code Quality

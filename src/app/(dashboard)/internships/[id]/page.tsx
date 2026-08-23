@@ -1,7 +1,8 @@
 "use client" /* Back Button */ /* Main Glass Header */ /* AI Analysis Box */ /* Detailed Sections */
-import React, { useState } from "react"
+import React, { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { apiJson } from "@/lib/api-client"
 import {
   ArrowLeft,
   ShieldCheck,
@@ -19,11 +20,44 @@ import {
 export default function InternshipDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = use(params)
   const router = useRouter()
   const [addedToRoadmap, setAddedToRoadmap] = useState(false)
   const [addedToTracker, setAddedToTracker] = useState(false)
+  const [internship, setInternship] = useState<any>(null)
+
+  useEffect(() => {
+    let active = true
+    apiJson<any>(`/api/internships/${id}`).then((data) => {
+      if (active && data) setInternship(data)
+    })
+    return () => {
+      active = false
+    }
+  }, [id])
+
+  const company = internship?.company?.name ?? "OpenAI"
+  const title = internship?.title ?? "AI Research & Systems Engineering Intern"
+  const workType = internship?.workType ?? "hybrid"
+  const location = internship?.location ?? "San Francisco, CA"
+  const skills = internship?.requiredSkills ?? [
+    "Python",
+    "PyTorch",
+    "Distributed Systems",
+    "LLMs",
+    "CUDA",
+  ]
+
+  const handleTrackApplication = () => {
+    setAddedToTracker(true)
+    apiJson("/api/applications", {
+      method: "POST",
+      body: JSON.stringify({ internshipId: id, status: "saved" }),
+    })
+    setTimeout(() => router.push("/applications"), 1000)
+  }
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -40,15 +74,13 @@ export default function InternshipDetailPage({
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-sky-400">OpenAI</span>
+              <span className="text-sm font-bold text-sky-400">{company}</span>
               <span className="text-zinc-500">•</span>
               <span className="text-xs text-zinc-400 uppercase tracking-wider">
-                Hybrid (San Francisco, CA)
+                {workType} ({location})
               </span>
             </div>
-            <h1 className="text-2xl font-extrabold text-white">
-              AI Research & Systems Engineering Intern
-            </h1>
+            <h1 className="text-2xl font-extrabold text-white">{title}</h1>
             <p className="text-xs text-zinc-400">
               Application Deadline: 25 Days Remaining • Stipend: $55 - $65 / hr
             </p>
@@ -114,10 +146,7 @@ export default function InternshipDetailPage({
             </button>
 
             <button
-              onClick={() => {
-                setAddedToTracker(true)
-                setTimeout(() => router.push("/applications"), 1000)
-              }}
+              onClick={handleTrackApplication}
               className={`px-4 py-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition ${
                 addedToTracker
                   ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
@@ -166,16 +195,14 @@ export default function InternshipDetailPage({
               Requirements
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              {["Python", "PyTorch", "Distributed Systems", "LLMs", "CUDA"].map(
-                (skill) => (
-                  <div
-                    key={skill}
-                    className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-xs text-white"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-sky-400" /> {skill}
-                  </div>
-                ),
-              )}
+              {skills.map((skill) => (
+                <div
+                  key={skill}
+                  className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-xs text-white"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-sky-400" /> {skill}
+                </div>
+              ))}
             </div>
           </div>
         </div>

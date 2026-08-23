@@ -328,7 +328,7 @@ Admins can:
 
 ### Backend
 
--   Convex
+-   Prisma ORM + PostgreSQL
 -   BetterAuth
 -   TypeScript
 
@@ -340,13 +340,13 @@ Admins can:
 
 ### Storage
 
--   Convex Storage
+-   PostgreSQL (file metadata; object storage for binaries)
 -   UploadThing (optional)
 
 ### Deployment
 
 -   Vercel
--   Convex Cloud
+-   Neon (Serverless PostgreSQL)
 
 ------------------------------------------------------------------------
 

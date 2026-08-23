@@ -1,6 +1,7 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
+import { apiJson } from "@/lib/api-client"
 import {
   Bell,
   Calendar,
@@ -11,6 +12,50 @@ import {
 } from "lucide-react"
 
 export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState<{
+    title: string
+    desc: string
+    time: string
+    type: string
+  }[]>([
+    {
+      title: "OpenAI Online Technical OA Scheduled",
+      desc: "Your Hackerrank technical assessment link is active. Recommended practice: 15 DP & Graph problems.",
+      time: "2 hours ago",
+      type: "interview",
+    },
+    {
+      title: "Roadmap Milestone Milestone Completed",
+      desc: 'You completed "Implement Real-time Prisma ORM Backend Mutations". Your Readiness Score increased +3%.',
+      time: "Yesterday",
+      type: "roadmap",
+    },
+    {
+      title: "Vercel Internship Deadline Approaching",
+      desc: "Application deadline for Frontend Engineering Intern is in 18 days.",
+      time: "2 days ago",
+      type: "deadline",
+    },
+  ])
+
+  useEffect(() => {
+    let active = true
+    apiJson<any[]>("/api/notifications").then((data) => {
+      if (!active || !data || data.length === 0) return
+      setNotifications(
+        data.map((n) => ({
+          title: n.title,
+          desc: n.message,
+          time: new Date(n.createdAt).toLocaleDateString(),
+          type: n.type,
+        })),
+      )
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
@@ -26,26 +71,7 @@ export default function NotificationsPage() {
       </div>
 
       <div className="space-y-4">
-        {[
-          {
-            title: "OpenAI Online Technical OA Scheduled",
-            desc: "Your Hackerrank technical assessment link is active. Recommended practice: 15 DP & Graph problems.",
-            time: "2 hours ago",
-            type: "interview",
-          },
-          {
-            title: "Roadmap Milestone Milestone Completed",
-            desc: 'You completed "Implement Real-time Convex Backend Mutations". Your Readiness Score increased +3%.',
-            time: "Yesterday",
-            type: "roadmap",
-          },
-          {
-            title: "Vercel Internship Deadline Approaching",
-            desc: "Application deadline for Frontend Engineering Intern is in 18 days.",
-            time: "2 days ago",
-            type: "deadline",
-          },
-        ].map((n, i) => (
+        {notifications.map((n, i) => (
           <div
             key={i}
             className="material-glass p-5 rounded-3xl border border-white/10 flex items-start justify-between"

@@ -995,8 +995,32 @@ async function main() {
   }
 
   // ==========================================
+  // DEMO DATA (opt-in via SEED_DEMO_DATA=true)
+  // User-specific records must never masquerade as live data in production.
+  // Global reference data above (companies, internships) is always seeded.
+  // ==========================================
+  const seedDemo = process.env.SEED_DEMO_DATA === "true"
+  if (!seedDemo) {
+    console.log(
+      "Global reference data seeded. Set SEED_DEMO_DATA=true for demo users & fixtures.",
+    )
+    return
+  }
+
+  // ==========================================
   // 3. SEED DIVERSE STUDENT PERSONAS & PROFILES
   // ==========================================
+  // Admin account for internship/company management (role checked server-side).
+  await prisma.user.create({
+    data: {
+      email: "admin@internedge.io",
+      name: "InternEdge Admin",
+      role: "admin",
+      createdAt: new Date(now - 120 * day),
+      updatedAt: new Date(now - 1 * day),
+    },
+  })
+
   // Student 1: Alex Rivera (Stanford - Full-Stack & AI Systems)
   const alexUserId = await prisma.user.create({
     data: {
@@ -1024,6 +1048,7 @@ async function main() {
       linkedin: "https://linkedin.com/in/alexrivera",
       portfolio: "https://alexrivera.dev",
       careerGoal: "Full-Stack & AI Systems Engineer",
+      onboardedAt: new Date(now - 89 * day),
     },
   })
 
@@ -1054,6 +1079,7 @@ async function main() {
       linkedin: "https://linkedin.com/in/mayalin-ai",
       portfolio: "https://mayalin.ai",
       careerGoal: "AI Research Scientist / Systems Engineer",
+      onboardedAt: new Date(now - 59 * day),
     },
   })
 
@@ -1879,7 +1905,10 @@ async function main() {
   })
 
   console.log(
-    "Database successfully seeded with 20 Tech Companies & Unicorns, 40+ Internships, 4 Student Profiles, Skills, Projects, Experiences, ATS Resumes, Roadmaps, Applications, Mock Interviews, Activity Logs, and Notifications!",
+    "Demo data seeded: student personas with profiles, skills, resumes, roadmaps, applications, interviews, activity & notifications.",
+  )
+  console.log(
+    "(Companies + internships above are global reference data; everything in this block belongs to demo users only.)",
   )
 }
 

@@ -1,10 +1,6 @@
 import { prisma } from "@/lib/db"
 import { storage } from "@/lib/storage"
-import {
-  analyzeResume,
-  heuristicParse,
-  parseResume,
-} from "@/lib/ai/services"
+import { analyzeResume, heuristicParse, parseResume } from "@/lib/ai/services"
 import { notify, logActivity } from "./notifier"
 import type { StructuredResume } from "@/lib/ai/schemas"
 
@@ -32,10 +28,14 @@ export async function processResumeUpload(input: {
   if (buffer.subarray(0, 5).toString("latin1") !== "%PDF-") {
     throw new ResumePipelineError("Only valid PDF files are supported")
   }
-  const safeName = (file.name || "resume.pdf").replace(/[^\w.\- ]/g, "").slice(0, 120)
+  const safeName = (file.name || "resume.pdf")
+    .replace(/[^\w.\- ]/g, "")
+    .slice(0, 120)
 
   // 1. Create DB row first so we have a stable id for the storage key.
-  const existingCount = await prisma.resume.count({ where: { userId: input.userId } })
+  const existingCount = await prisma.resume.count({
+    where: { userId: input.userId },
+  })
   const resume = await prisma.resume.create({
     data: {
       userId: input.userId,
@@ -123,7 +123,17 @@ export async function processResumeUpload(input: {
     skills: [],
     certifications: [],
     achievements: [],
-    ...(aiStructured ?? heuristicParse(text)),
+  }
+  // AI parse wins; deterministic fallback fills any remaining gaps.
+  Object.assign(structured, heuristicParse(text))
+  if (aiStructured) {
+    Object.assign(structured, {
+      ...aiStructured,
+      links: aiStructured.links?.length ? aiStructured.links : structured.links,
+      skills: aiStructured.skills?.length
+        ? aiStructured.skills
+        : structured.skills,
+    })
   }
 
   await prisma.resume.update({
@@ -147,8 +157,7 @@ async function runAnalysis(
   structured: StructuredResume | unknown,
 ) {
   const profile = await prisma.profile.findUnique({ where: { userId } })
-  const targetRole =
-    profile?.targetRoles?.[0] ?? profile?.targetRole ?? null
+  const targetRole = profile?.targetRoles?.[0] ?? profile?.targetRole ?? null
 
   const analysis = await analyzeResume({
     text,
@@ -189,9 +198,11 @@ export async function reanalyzeResume(userId: string, resumeId: string) {
   const resume = await prisma.resume.findFirst({
     where: { id: resumeId, userId },
   })
-  if (!resume?.parsedText) throw new ResumePipelineError("No parsed text available for this resume")
+  if (!resume?.parsedText)
+    throw new ResumePipelineError("No parsed text available for this resume")
 
   const structured =
-    (resume.structured as StructuredResume | null) ?? heuristicParse(resume.parsedText)
+    resume.structured as StructuredResume | null ??
+    heuristicParse(resume.parsedText)
   await runAnalysis(resume.id, userId, resume.parsedText, structured)
 }

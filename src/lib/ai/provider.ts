@@ -11,8 +11,7 @@ export class AIServiceError extends Error {
   }
 }
 
-const BASE_URL =
-  process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1"
+const BASE_URL = process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1"
 const MODEL = process.env.LLM_MODEL || "llama-3.3-70b-versatile"
 const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || 30_000)
 
@@ -21,12 +20,14 @@ export function isAIEnabled(): boolean {
   return Boolean(process.env.GROQ_API_KEY)
 }
 
-type ChatMessage = { role: "system" | "user" | "assistant"; content: string }
+type ChatMessage = { role: "system" | "user" | "assistant" content: string }
 
 function extractJson(raw: string): unknown {
   const trimmed = raw.trim()
   // Strip markdown fences if the model added them.
-  const unfenced = trimmed.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "")
+  const unfenced = trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/```\s*$/, "")
   try {
     return JSON.parse(unfenced)
   } catch {
@@ -40,7 +41,10 @@ function extractJson(raw: string): unknown {
   }
 }
 
-async function callChat(messages: ChatMessage[], maxTokens: number): Promise<string> {
+async function callChat(
+  messages: ChatMessage[],
+  maxTokens: number,
+): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) throw new AIServiceError("LLM provider not configured")
 

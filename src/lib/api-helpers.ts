@@ -27,7 +27,10 @@ export function handleRoute<Args extends unknown[]>(
     } catch (err) {
       if (err instanceof ApiError) {
         return json(
-          { error: err.message, ...(err.details ? { details: err.details } : {}) },
+          {
+            error: err.message,
+            ...(err.details ? { details: err.details } : {}),
+          },
           err.status,
         )
       }
@@ -52,7 +55,8 @@ export async function requireUser(): Promise<AuthSession> {
 
 export async function requireAdmin(): Promise<AuthSession> {
   const user = await requireUser()
-  if (user.userRole !== "admin") throw new ApiError(403, "Admin access required")
+  if (user.userRole !== "admin")
+    throw new ApiError(403, "Admin access required")
   return user
 }
 

@@ -41,7 +41,9 @@ export const POST = handleRoute(async (req: Request, { params }: Params) => {
     throw new ApiError(409, "This interview session is already finished")
   }
 
-  const transcript = (interview.questions as unknown as { items: TranscriptItem[] }).items
+  const transcript = (interview.questions as unknown as {
+    items: TranscriptItem[]
+  }).items
   const idx = Math.min(interview.currentQuestionIndex, transcript.length - 1)
   if (transcript[idx].answer && !transcript[idx].followUpAsked) {
     throw new ApiError(409, "This question was already answered")

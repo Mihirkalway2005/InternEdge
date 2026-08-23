@@ -14,8 +14,13 @@
 export type ReadinessInput = {
   latestAtsScore: number | null
   skillCoverage: number // 0..1
-  projects: { title: string; description: string; github?: string | null; liveDemo?: string | null }[]
-  experiences: { role: string; company: string }[]
+  projects: {
+    title: string
+    description: string
+    github?: string | null
+    liveDemo?: string | null
+  }[]
+  experiences: { role: string company: string }[]
   interviewScores: number[]
   roadmapProgress: number // 0..100
   activeApplicationCount: number // status beyond saved
@@ -23,18 +28,22 @@ export type ReadinessInput = {
 
 export type ReadinessResult = {
   score: number // 0..100
-  components: Record<string, { value: number; weight: number }>
+  components: Record<string, { value: number weight: number }>
 }
 
 export function computeReadiness(input: ReadinessInput): ReadinessResult {
   const resumeQuality =
-    input.latestAtsScore != null ? Math.max(0, Math.min(input.latestAtsScore, 100)) / 100 : 0
+    input.latestAtsScore != null
+      ? Math.max(0, Math.min(input.latestAtsScore, 100)) / 100
+      : 0
 
   const skillCoverage = Math.max(0, Math.min(input.skillCoverage, 1))
 
   let projectSignal = 0
   if (input.projects.length > 0) {
-    const withLinks = input.projects.filter((p) => p.github || p.liveDemo).length
+    const withLinks = input.projects.filter(
+      (p) => p.github || p.liveDemo,
+    ).length
     const withDescriptions = input.projects.filter(
       (p) => p.description.length > 40,
     ).length
@@ -55,7 +64,8 @@ export function computeReadiness(input: ReadinessInput): ReadinessResult {
         input.interviewScores.length /
         100
 
-  const roadmapProgress = Math.max(0, Math.min(input.roadmapProgress, 100)) / 100
+  const roadmapProgress =
+    Math.max(0, Math.min(input.roadmapProgress, 100)) / 100
 
   const applicationActivity = Math.min(input.activeApplicationCount / 5, 1)
 

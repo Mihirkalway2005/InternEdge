@@ -6,7 +6,11 @@ import {
   json,
   requireUser,
 } from "@/lib/api-helpers"
-import { logActivity, notify, recordSnapshotSafe } from "@/lib/services/notifier"
+import {
+  logActivity,
+  notify,
+  recordSnapshotSafe,
+} from "@/lib/services/notifier"
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -23,7 +27,9 @@ export const POST = handleRoute(async (_req: Request, { params }: Params) => {
     throw new ApiError(409, "Session already completed")
   }
 
-  const transcript = (interview.questions as unknown as { items: TranscriptItem[] }).items
+  const transcript = (interview.questions as unknown as {
+    items: TranscriptItem[]
+  }).items
   const answered = transcript.filter((q) => q.score != null)
   if (answered.length === 0) {
     throw new ApiError(400, "Answer at least one question before completing")
@@ -44,7 +50,9 @@ export const POST = handleRoute(async (_req: Request, { params }: Params) => {
         ? "Decent foundation — focus on structuring answers with concrete examples and rubric keywords."
         : "Keep practicing: aim for specific examples, correct fundamentals, and complete (STAR) answers.")
 
-  const durationSec = Math.round((Date.now() - interview.startedAt.getTime()) / 1000)
+  const durationSec = Math.round(
+    (Date.now() - interview.startedAt.getTime()) / 1000,
+  )
 
   const updated = await prisma.interview.update({
     where: { id },

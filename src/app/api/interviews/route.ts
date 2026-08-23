@@ -32,12 +32,19 @@ export const POST = handleRoute(async (req: Request) => {
 
   // Abandon any stale in-progress sessions.
   await prisma.interview.updateMany({
-    where: { userId, status: "in_progress", startedAt: { lt: new Date(Date.now() - 2 * 60 * 60 * 1000) } },
+    where: {
+      userId,
+      status: "in_progress",
+      startedAt: { lt: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+    },
     data: { status: "abandoned" },
   })
 
   const [profile] = await Promise.all([
-    prisma.profile.findUnique({ where: { userId }, select: { targetRoles: true, targetRole: true } }),
+    prisma.profile.findUnique({
+      where: { userId },
+      select: { targetRoles: true, targetRole: true },
+    }),
   ])
 
   const questions = await generateInterviewQuestions({

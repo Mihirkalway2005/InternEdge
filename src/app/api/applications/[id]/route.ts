@@ -13,7 +13,15 @@ type Params = { params: Promise<{ id: string }> }
 
 const updateSchema = z.object({
   status: z
-    .enum(["saved", "applied", "assessment", "interview", "hr", "offer", "rejected"])
+    .enum([
+      "saved",
+      "applied",
+      "assessment",
+      "interview",
+      "hr",
+      "offer",
+      "rejected",
+    ])
     .optional(),
   notes: z.string().max(4000).nullish(),
 })
@@ -36,12 +44,15 @@ export const PATCH = handleRoute(async (req: Request, { params }: Params) => {
 
   const existing = await prisma.application.findUnique({
     where: { id },
-    include: { internship: { select: { title: true, company: { select: { name: true } } } } },
+    include: {
+      internship: {
+        select: { title: true, company: { select: { name: true } } },
+      },
+    },
   })
   assertOwned(existing, userId)
 
-  const statusChanged =
-    body.status != null && body.status !== existing.status
+  const statusChanged = body.status != null && body.status !== existing.status
 
   const application = await prisma.$transaction(async (tx) => {
     const updated = await tx.application.update({

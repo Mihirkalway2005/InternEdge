@@ -44,7 +44,9 @@ export const PATCH = handleRoute(async (req: Request, { params }: Params) => {
           }
         : {}),
       ...(body.title != null ? { title: body.title } : {}),
-      ...(body.description !== undefined ? { description: body.description } : {}),
+      ...(body.description !== undefined
+        ? { description: body.description }
+        : {}),
       ...(body.dueDate !== undefined ? { dueDate: body.dueDate } : {}),
       ...(body.priority != null ? { priority: body.priority } : {}),
     },

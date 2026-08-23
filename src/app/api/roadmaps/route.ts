@@ -1,11 +1,6 @@
 import { z } from "zod"
 import { prisma } from "@/lib/db"
-import {
-  assertOwned,
-  handleRoute,
-  json,
-  requireUser,
-} from "@/lib/api-helpers"
+import { assertOwned, handleRoute, json, requireUser } from "@/lib/api-helpers"
 import { computeSkillGaps } from "@/lib/engine/skillgap"
 import { generateRoadmapPlan } from "@/lib/ai/services"
 import { logActivity } from "@/lib/services/notifier"
@@ -15,7 +10,9 @@ export const GET = handleRoute(async () => {
   const roadmaps = await prisma.roadmap.findMany({
     where: { userId },
     include: {
-      tasks: { orderBy: [{ week: "asc" }, { priority: "asc" }, { createdAt: "asc" }] },
+      tasks: {
+        orderBy: [{ week: "asc" }, { priority: "asc" }, { createdAt: "asc" }],
+      },
     },
     orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
   })
@@ -46,19 +43,29 @@ export const POST = handleRoute(async (_req: Request) => {
   ])
 
   const targetRole =
-    profile?.targetRoles?.[0] ?? profile?.targetRole ?? "Software Engineering Intern"
+    profile?.targetRoles?.[0] ??
+    profile?.targetRole ??
+    "Software Engineering Intern"
 
   const demandMap = new Map<string, number>()
   for (const app of demanded) {
     for (const skill of app.internship.requiredSkills) {
-      demandMap.set(skill.toLowerCase(), (demandMap.get(skill.toLowerCase()) ?? 0) + 1)
+      demandMap.set(
+        skill.toLowerCase(),
+        (demandMap.get(skill.toLowerCase()) ?? 0) + 1,
+      )
     }
   }
 
   const gaps = computeSkillGaps({
     skills,
-    targetRoles: profile?.targetRoles?.length ? profile.targetRoles : [targetRole],
-    demandedSkills: [...demandMap].map(([skill, demandCount]) => ({ skill, demandCount })),
+    targetRoles: profile?.targetRoles?.length
+      ? profile.targetRoles
+      : [targetRole],
+    demandedSkills: [...demandMap].map(([skill, demandCount]) => ({
+      skill,
+      demandCount,
+    })),
   })
 
   if (gaps.length === 0 && skills.length === 0) {
@@ -101,7 +108,9 @@ export const POST = handleRoute(async (_req: Request) => {
             resourceUrl: task.resourceUrl ?? null,
             priority: task.priority,
             week: week.week,
-            dueDate: new Date(now.getTime() + week.week * 7 * 24 * 60 * 60 * 1000),
+            dueDate: new Date(
+              now.getTime() + week.week * 7 * 24 * 60 * 60 * 1000,
+            ),
           })),
         ),
       },
@@ -127,24 +136,26 @@ function deterministicPlan(
   const topGaps = gaps.slice(0, 12)
   return {
     title: `${targetRole} Readiness Plan`,
-    weeks: [1, 2, 3, 4].map((week) => ({
-      week,
-      focus:
-        week === 1
-          ? "Foundations"
-          : week === 2
-            ? "Core skills"
-            : week === 3
-              ? "Applied practice"
-              : "Interview readiness",
-      tasks: topGaps.slice((week - 1) * 3, week * 3).map((gap) => ({
-        title: `Learn & practice: ${gap.skill}`,
-        detail: gap.reason,
-        category: null,
-        skillName: gap.skill,
-        resourceUrl: `https://www.google.com/search?q=${encodeURIComponent(gap.skill + " tutorial")}`,
-        priority: gap.weight > 0.7 ? 1 : 2,
-      })),
-    })).filter((w) => w.tasks.length > 0),
+    weeks: [1, 2, 3, 4]
+      .map((week) => ({
+        week,
+        focus:
+          week === 1
+            ? "Foundations"
+            : week === 2
+              ? "Core skills"
+              : week === 3
+                ? "Applied practice"
+                : "Interview readiness",
+        tasks: topGaps.slice((week - 1) * 3, week * 3).map((gap) => ({
+          title: `Learn & practice: ${gap.skill}`,
+          detail: gap.reason,
+          category: null,
+          skillName: gap.skill,
+          resourceUrl: `https://www.google.com/search?q=${encodeURIComponent(gap.skill + " tutorial")}`,
+          priority: gap.weight > 0.7 ? 1 : 2,
+        })),
+      }))
+      .filter((w) => w.tasks.length > 0),
   }
 }

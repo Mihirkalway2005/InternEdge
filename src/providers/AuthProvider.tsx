@@ -1,16 +1,29 @@
 "use client"
 
-import React, { createContext, useContext, useState, ReactNode } from "react"
+/**
+ * Client-side session mirror. The server session (BetterAuth cookie) is the
+ * only source of identity — this context exists purely for display and to
+ * invoke auth actions. Authorization decisions are always made server-side.
+ */
+
+/** Shared profile-field list used by onboarding/profile forms. */
+
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  ReactNode,
+} from "react"
+import { useRouter } from "next/navigation"
 import { authClient, useSession } from "@/lib/auth-client"
+import type { Profile } from "@/types"
 
 export interface UserSession {
   id: string
   name: string
   email: string
-  role: "student" | "admin" | "mentor" | "placement_cell"
-  isOnboarded: boolean
   avatarUrl?: string
-  provider?: string
 }
 
 interface AuthContextType {
@@ -26,7 +39,6 @@ interface AuthContextType {
   ) => Promise<boolean>
   signInSocial: (provider: "google" | "github") => Promise<void>
   logout: () => void
-  completeOnboarding: (data: Partial<UserSession>) => void
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,30 +46,14 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: false,
   error: null,
   clearError: () => {},
-  signInEmail: async () => true,
-  signUpEmail: async () => true,
+  signInEmail: async () => false,
+  signUpEmail: async () => false,
   signInSocial: async () => {},
   logout: () => {},
-  completeOnboarding: () => {},
 })
-
-const PROFILE_FIELDS = [
-  "headline",
-  "university",
-  "education",
-  "degree",
-  "branch",
-  "graduationYear",
-  "bio",
-  "github",
-  "linkedin",
-  "portfolio",
-  "careerGoal",
-]
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const session = useSession()
-  const [isOnboarded, setIsOnboarded] = useState<boolean>(true)
+  const router = useRouter()
   const [error, setError] = useState<string | null>(null)
 
   const sessionUser = session.data?.user
@@ -67,93 +63,90 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name:
           sessionUser.name ||
           (sessionUser.email ? sessionUser.email.split("@")[0] : "Student"),
-        email: sessionUser.email,
-        role: "student",
-        isOnboarded,
+        email: sessionUser.email ?? "",
         avatarUrl: sessionUser.image || undefined,
       }
     : null
 
-  const clearError = () => setError(null)
+  const clearError = useCallback(() => setError(null), [])
 
-  const signInEmail = async (
-    email: string,
-    password?: string,
-  ): Promise<boolean> => {
-    setError(null)
-    try {
-      const res = await authClient.signIn.email({
-        email,
-        password: password || "password123",
-      })
-      if (res?.error) {
-        setError(res.error.message || "Failed to sign in")
+  const signInEmail = useCallback(
+    async (email: string, password?: string): Promise<boolean> => {
+      setError(null)
+      if (!password || password.length < 8) {
+        setError("Password must be at least 8 characters")
         return false
       }
-      return true
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign in")
-      return false
-    }
-  }
-
-  const signUpEmail = async (
-    email: string,
-    password?: string,
-    name?: string,
-  ): Promise<boolean> => {
-    setError(null)
-    try {
-      const res = await authClient.signUp.email({
-        email,
-        password: password || "Password123!",
-        name: name || email.split("@")[0],
-      })
-      if (res?.error) {
-        setError(res.error.message || "Failed to sign up")
+      try {
+        const res = await authClient.signIn.email({ email, password })
+        if (res?.error) {
+          setError(res.error.message || "Invalid email or password")
+          return false
+        }
+        return true
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to sign in")
         return false
       }
-      setIsOnboarded(false)
-      return true
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign up")
-      return false
-    }
-  }
+    },
+    [],
+  )
 
-  const signInSocial = async (provider: "google" | "github") => {
+  const signUpEmail = useCallback(
+    async (
+      email: string,
+      password?: string,
+      name?: string,
+    ): Promise<boolean> => {
+      setError(null)
+      if (!password || password.length < 8) {
+        setError("Password must be at least 8 characters")
+        return false
+      }
+      try {
+        const res = await authClient.signUp.email({
+          email,
+          password,
+          name: name || email.split("@")[0],
+        })
+        if (res?.error) {
+          setError(res.error.message || "Failed to sign up")
+          return false
+        }
+        return true
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to sign up")
+        return false
+      }
+    },
+    [],
+  )
+
+  const signInSocial = useCallback(async (provider: "google" | "github") => {
     setError(null)
     try {
-      await authClient.signIn.social({
+      const res = await authClient.signIn.social({
         provider,
         callbackURL: "/dashboard",
       })
+      if (res?.error) {
+        setError(`${provider} sign-in is not configured on this deployment.`)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign in")
+      setError(
+        err instanceof Error
+          ? `${provider} sign-in is not available: ${err.message}`
+          : `${provider} sign-in is not configured`,
+      )
     }
-  }
+  }, [])
 
-  const logout = () => {
-    try {
-      authClient.signOut()
-    } catch {}
-  }
-
-  const completeOnboarding = (data: Partial<UserSession>) => {
-    const profile: Record<string, unknown> = {}
-    for (const field of PROFILE_FIELDS) {
-      const value = (data as Record<string, unknown>)[field]
-      if (value !== undefined) profile[field] = value
-    }
-    if (Object.keys(profile).length > 0) {
-      fetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profile),
-      }).catch(() => {})
-    }
-    setIsOnboarded(true)
-  }
+  const logout = useCallback(() => {
+    authClient
+      .signOut()
+      .then(() => router.push("/login"))
+      .catch(() => router.push("/login"))
+  }, [router])
 
   return (
     <AuthContext.Provider
@@ -166,7 +159,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUpEmail,
         signInSocial,
         logout,
-        completeOnboarding,
       }}
     >
       {children}
@@ -177,3 +169,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   return useContext(AuthContext)
 }
+export const PROFILE_FIELDS_URLS = ["github", "linkedin", "portfolio"] as const
+export type ProfileFormValues = Omit<Profile, "id">

@@ -25,7 +25,12 @@ export const POST = handleRoute(async (req: Request) => {
   const { userId } = await requireUser()
   const body = await parseBody(req, createSchema)
   const project = await prisma.project.create({
-    data: { ...body, github: body.github ?? null, liveDemo: body.liveDemo ?? null, userId },
+    data: {
+      ...body,
+      github: body.github ?? null,
+      liveDemo: body.liveDemo ?? null,
+      userId,
+    },
   })
   return json(project, 201)
 })

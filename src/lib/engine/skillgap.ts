@@ -6,9 +6,9 @@ import {
 } from "./taxonomy"
 
 export type SkillGapInput = {
-  skills: { name: string; level: string }[]
+  skills: { name: string level: string }[]
   targetRoles: string[]
-  demandedSkills: { skill: string; demandCount: number }[]
+  demandedSkills: { skill: string demandCount: number }[]
 }
 
 export type SkillGap = {
@@ -35,7 +35,10 @@ export function computeSkillGaps(input: SkillGapInput): SkillGap[] {
   for (const s of input.skills) owned.set(normalizeSkill(s.name), s.level)
 
   const demand = new Map<string, number>()
-  const maxDemandSeen = Math.max(1, ...input.demandedSkills.map((d) => d.demandCount))
+  const maxDemandSeen = Math.max(
+    1,
+    ...input.demandedSkills.map((d) => d.demandCount),
+  )
 
   for (const role of input.targetRoles) {
     for (const skill of expectedSkillsForRole(role)) {
@@ -77,7 +80,7 @@ export function computeSkillGaps(input: SkillGapInput): SkillGap[] {
 
 /** Coverage of expected skills for a role family (0..1). */
 export function skillCoverageScore(
-  skills: { name: string; level: string }[],
+  skills: { name: string level: string }[],
   targetRole: string,
 ): number {
   const owned = new Map(skills.map((s) => [normalizeSkill(s.name), s.level]))
@@ -86,7 +89,7 @@ export function skillCoverageScore(
   let covered = 0
   for (const skill of expected) {
     const level = owned.get(skill)
-    covered += level ? (levelValue(level) * 0.7 + 0.3) : 0
+    covered += level ? levelValue(level) * 0.7 + 0.3 : 0
   }
   return Math.min(covered / expected.length, 1)
 }

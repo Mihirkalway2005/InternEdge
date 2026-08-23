@@ -22,7 +22,10 @@ export const PATCH = handleRoute(async (_req: Request, { params }: Params) => {
 
   // Atomically make this the only primary resume for the user.
   await prisma.$transaction([
-    prisma.resume.updateMany({ where: { userId, isPrimary: true }, data: { isPrimary: false } }),
+    prisma.resume.updateMany({
+      where: { userId, isPrimary: true },
+      data: { isPrimary: false },
+    }),
     prisma.resume.update({ where: { id, userId }, data: { isPrimary: true } }),
   ])
 

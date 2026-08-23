@@ -23,7 +23,11 @@ class LocalDiskDriver implements StorageDriver {
     return join(this.baseDir, safeKey)
   }
 
-  async putObject(key: string, data: Buffer, _contentType: string): Promise<void> {
+  async putObject(
+    key: string,
+    data: Buffer,
+    _contentType: string,
+  ): Promise<void> {
     const path = this.resolve(key)
     await mkdir(dirname(path), { recursive: true })
     await writeFile(path, data)

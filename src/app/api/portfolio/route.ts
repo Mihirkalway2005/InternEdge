@@ -10,23 +10,42 @@ import {
 import { logActivity } from "@/lib/services/notifier"
 
 async function buildPortfolioData(userId: string) {
-  const [user, profile, skills, projects, experiences, resume] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId }, select: { name: true, email: true } }),
-    prisma.profile.findUnique({ where: { userId } }),
-    prisma.skill.findMany({ where: { userId }, orderBy: [{ level: "desc" }, { name: "asc" }] }),
-    prisma.project.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 8 }),
-    prisma.experience.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 5 }),
-    prisma.resume.findFirst({
-      where: { userId, status: "analyzed" },
-      select: { structured: true },
-      orderBy: { isPrimary: "desc" },
-    }),
-  ])
+  const [user, profile, skills, projects, experiences, resume] =
+    await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      }),
+      prisma.profile.findUnique({ where: { userId } }),
+      prisma.skill.findMany({
+        where: { userId },
+        orderBy: [{ level: "desc" }, { name: "asc" }],
+      }),
+      prisma.project.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      }),
+      prisma.experience.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      prisma.resume.findFirst({
+        where: { userId, status: "analyzed" },
+        select: { structured: true },
+        orderBy: { isPrimary: "desc" },
+      }),
+    ])
 
   return {
     name: user?.name ?? "Student",
     email: user?.email ?? null,
-    headline: profile?.headline ?? profile?.targetRoles?.[0] ?? profile?.targetRole ?? "Aspiring Software Engineer",
+    headline:
+      profile?.headline ??
+      profile?.targetRoles?.[0] ??
+      profile?.targetRole ??
+      "Aspiring Software Engineer",
     bio: profile?.bio ?? profile?.careerGoal ?? null,
     university: profile?.university,
     degree: profile?.degree,
@@ -38,7 +57,8 @@ async function buildPortfolioData(userId: string) {
     skills,
     projects,
     experiences,
-    resumeProjects: (resume?.structured as { projects?: unknown[] } | null)?.projects ?? [],
+    resumeProjects:
+      (resume?.structured as { projects?: unknown[] } | null)?.projects ?? [],
   }
 }
 

@@ -14,7 +14,8 @@ function requireEnv(name: string): string {
 
 // Fail fast at boot when critical secrets are absent instead of silently
 // running with an insecure fallback value.
-const secret = process.env.BETTER_AUTH_SECRET || requireEnv("BETTER_AUTH_SECRET")
+const secret =
+  process.env.BETTER_AUTH_SECRET || requireEnv("BETTER_AUTH_SECRET")
 
 const githubId = process.env.GITHUB_CLIENT_ID
 const githubSecret = process.env.GITHUB_CLIENT_SECRET

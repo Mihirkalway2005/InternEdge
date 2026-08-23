@@ -33,7 +33,9 @@ import { expectedSkillsForRole } from "@/lib/engine/taxonomy"
 
 // ---------- Resume parsing ----------
 
-export async function parseResume(text: string): Promise<StructuredResume | null> {
+export async function parseResume(
+  text: string,
+): Promise<StructuredResume | null> {
   if (!isAIEnabled()) return null
   try {
     return await chatJSON({
@@ -55,7 +57,9 @@ export function heuristicParse(
   const email = text.match(/[\w.+-]+@[\w-]+\.[\w.]+/)?.[0] ?? null
   const links = [
     ...new Set(
-      (text.match(/https?:\/\/[^\s)]+/g) ?? []).map((l) => l.replace(/[.,]$/, "")),
+      (text.match(/https?:\/\/[^\s)]+/g) ?? []).map((l) =>
+        l.replace(/[.,]$/, ""),
+      ),
     ),
   ].slice(0, 8)
   const github = text.match(/github\.com\/[\w-]+/i)?.[0]
@@ -74,7 +78,10 @@ export function heuristicParse(
 
   return {
     email,
-    links: github && !links.some((l) => l.includes("github.com")) ? [...links, `https://${github}`] : links,
+    links:
+      github && !links.some((l) => l.includes("github.com"))
+        ? [...links, `https://${github}`]
+        : links,
     skills,
     education: [],
     experience: [],
@@ -91,7 +98,9 @@ export async function analyzeResume(input: {
   structured: unknown
   targetRole?: string | null
 }): Promise<ATSAnalysis> {
-  const roleKeywords = expectedSkillsForRole(input.targetRole || "software engineer")
+  const roleKeywords = expectedSkillsForRole(
+    input.targetRole || "software engineer",
+  )
   const heuristics = computeATSHeuristics(
     input.text,
     input.structured as StructuredResume | null,
@@ -120,7 +129,9 @@ export async function analyzeResume(input: {
       },
       matchedKeywords: coverage.matched.slice(0, 25),
       missingKeywords: coverage.missing.slice(0, 15),
-      suggestions: buildHeuristicSuggestions(heuristics, coverage.missing).map(s => ({...s, priority: s.priority as "high" | "medium" | "low"})),
+      suggestions: buildHeuristicSuggestions(heuristics, coverage.missing).map(
+        (s) => ({ ...s, priority: s.priority as "high" | "medium" | "low" }),
+      ),
       summary:
         "Heuristic analysis (AI provider not configured): score derived from deterministic formatting, keyword-coverage and content checks.",
     }
@@ -144,7 +155,8 @@ ${guardUntrusted("resume_text", input.text)}`,
       dimensions: {
         ...aiResult.dimensions,
         keywordCoverage: Math.round(
-          aiResult.dimensions.keywordCoverage * 0.4 + coverage.coveragePct * 0.6,
+          aiResult.dimensions.keywordCoverage * 0.4 +
+            coverage.coveragePct * 0.6,
         ),
       },
       matchedKeywords: [
@@ -168,7 +180,9 @@ ${guardUntrusted("resume_text", input.text)}`,
       },
       matchedKeywords: coverage.matched.slice(0, 25),
       missingKeywords: coverage.missing.slice(0, 15),
-      suggestions: buildHeuristicSuggestions(heuristics, coverage.missing).map(s => ({...s, priority: s.priority as "high" | "medium" | "low"})),
+      suggestions: buildHeuristicSuggestions(heuristics, coverage.missing).map(
+        (s) => ({ ...s, priority: s.priority as "high" | "medium" | "low" }),
+      ),
       summary:
         "Analyzed with deterministic heuristics after the AI service was unavailable.",
     }
@@ -178,8 +192,8 @@ ${guardUntrusted("resume_text", input.text)}`,
 function buildHeuristicSuggestions(
   h: ReturnType<typeof computeATSHeuristics>,
   missing: string[],
-): { title: string; detail: string; priority: string }[] {
-  const out: { title: string; detail: string; priority: string }[] = []
+): { title: string detail: string priority: string }[] {
+  const out: { title: string detail: string priority: string }[] = []
   if (h.quantification < 50)
     out.push({
       title: "Quantify your impact",
@@ -203,13 +217,15 @@ function buildHeuristicSuggestions(
   if (h.sectionCompleteness < 80)
     out.push({
       title: "Complete all standard sections",
-      detail: "Ensure Education, Experience, Projects and Skills sections are present.",
+      detail:
+        "Ensure Education, Experience, Projects and Skills sections are present.",
       priority: "medium",
     })
   if (out.length === 0)
     out.push({
       title: "Solid foundation",
-      detail: "Keep your resume updated as you complete projects and gain experience.",
+      detail:
+        "Keep your resume updated as you complete projects and gain experience.",
       priority: "low",
     })
   return out
@@ -242,7 +258,12 @@ ${guardUntrusted("resume_text", input.text)}`,
 
 export async function generateRoadmapPlan(input: {
   targetRole: string
-  gaps: { skill: string; currentLevel: string | null; weight: number; reason: string }[]
+  gaps: {
+    skill: string
+    currentLevel: string | null
+    weight: number
+    reason: string
+  }[]
   knownSkills: string[]
 }): Promise<RoadmapPlan | null> {
   if (!isAIEnabled()) return null
@@ -253,7 +274,12 @@ export async function generateRoadmapPlan(input: {
 Skills already owned: ${input.knownSkills.slice(0, 30).join(", ") || "none yet"}
 Skill gaps (most urgent first): ${input.gaps
         .slice(0, 12)
-        .map((g) => `${g.skill}${g.currentLevel ? ` (currently ${g.currentLevel})` : " (missing)"}`)
+        .map(
+          (g) =>
+            `${g.skill}${
+              g.currentLevel ? ` (currently ${g.currentLevel})` : " (missing)"
+            }`,
+        )
         .join("; ")}
 Create an 4-week roadmap closing these gaps.`,
       schema: RoadmapPlanSchema,
@@ -267,34 +293,116 @@ Create an 4-week roadmap closing these gaps.`,
 
 // ---------- Interviews ----------
 
-const FALLBACK_QUESTIONS: Record<
-  string,
-  { text: string; rubricKeywords: string[] }[]
-> = {
+const FALLBACK_QUESTIONS: Record<string, {
+  text: string
+  rubricKeywords: string[]
+}[]> = {
   technical: [
-    { text: "Explain the difference between processes and threads, and when you would choose multi-threading over multi-processing.", rubricKeywords: ["process", "thread", "memory", "context switch", "concurrency"] },
-    { text: "Walk me through how a REST API request travels from the browser to a database and back. Where can latency creep in?", rubricKeywords: ["http", "dns", "server", "query", "latency", "serialization"] },
-    { text: "What is a database index, and what trade-offs do indexes introduce?", rubricKeywords: ["index", "b-tree", "write", "lookup", "storage"] },
-    { text: "Describe how you would debug a page that loads slowly in production.", rubricKeywords: ["profile", "network", "cache", "measure", "database", "monitoring"] },
-    { text: "Explain Big-O notation and give an example where an O(n²) solution could be acceptable.", rubricKeywords: ["time complexity", "space complexity", "trade-off", "input size"] },
+    {
+      text: "Explain the difference between processes and threads, and when you would choose multi-threading over multi-processing.",
+      rubricKeywords: [
+        "process",
+        "thread",
+        "memory",
+        "context switch",
+        "concurrency",
+      ],
+    },
+    {
+      text: "Walk me through how a REST API request travels from the browser to a database and back. Where can latency creep in?",
+      rubricKeywords: [
+        "http",
+        "dns",
+        "server",
+        "query",
+        "latency",
+        "serialization",
+      ],
+    },
+    {
+      text: "What is a database index, and what trade-offs do indexes introduce?",
+      rubricKeywords: ["index", "b-tree", "write", "lookup", "storage"],
+    },
+    {
+      text: "Describe how you would debug a page that loads slowly in production.",
+      rubricKeywords: [
+        "profile",
+        "network",
+        "cache",
+        "measure",
+        "database",
+        "monitoring",
+      ],
+    },
+    {
+      text: "Explain Big-O notation and give an example where an O(n²) solution could be acceptable.",
+      rubricKeywords: [
+        "time complexity",
+        "space complexity",
+        "trade-off",
+        "input size",
+      ],
+    },
   ],
   coding: [
-    { text: "Describe your approach to finding two numbers in an array that sum to a target. Compare brute force vs an optimal solution.", rubricKeywords: ["hash map", "o(n)", "two pointer", "brute force"] },
-    { text: "How would you detect a cycle in a linked list? Explain at least one approach in detail.", rubricKeywords: ["fast slow", "floyd", "pointer", "set", "cycle"] },
-    { text: "Explain how you would reverse a string without built-in functions, and discuss time and space complexity.", rubricKeywords: ["swap", "two pointer", "o(n)", "in place"] },
-    { text: "Given a binary tree, how would you traverse it level by level? What data structure do you use and why?", rubricKeywords: ["bfs", "queue", "level order", "tree"] },
+    {
+      text: "Describe your approach to finding two numbers in an array that sum to a target. Compare brute force vs an optimal solution.",
+      rubricKeywords: ["hash map", "o(n)", "two pointer", "brute force"],
+    },
+    {
+      text: "How would you detect a cycle in a linked list? Explain at least one approach in detail.",
+      rubricKeywords: ["fast slow", "floyd", "pointer", "set", "cycle"],
+    },
+    {
+      text: "Explain how you would reverse a string without built-in functions, and discuss time and space complexity.",
+      rubricKeywords: ["swap", "two pointer", "o(n)", "in place"],
+    },
+    {
+      text: "Given a binary tree, how would you traverse it level by level? What data structure do you use and why?",
+      rubricKeywords: ["bfs", "queue", "level order", "tree"],
+    },
   ],
   behavioral: [
-    { text: "Tell me about a challenging technical project. What was your specific contribution and the outcome?", rubricKeywords: ["situation", "task", "action", "result", "impact"] },
-    { text: "Describe a time you disagreed with a teammate. How did you resolve it?", rubricKeywords: ["conflict", "communication", "resolution", "compromise"] },
-    { text: "Tell me about a failure or mistake and what you learned from it.", rubricKeywords: ["ownership", "learning", "reflection", "growth"] },
-    { text: "How do you prioritize when you have multiple deadlines competing?", rubricKeywords: ["prioritize", "communicate", "triage", "deadline"] },
+    {
+      text: "Tell me about a challenging technical project. What was your specific contribution and the outcome?",
+      rubricKeywords: ["situation", "task", "action", "result", "impact"],
+    },
+    {
+      text: "Describe a time you disagreed with a teammate. How did you resolve it?",
+      rubricKeywords: ["conflict", "communication", "resolution", "compromise"],
+    },
+    {
+      text: "Tell me about a failure or mistake and what you learned from it.",
+      rubricKeywords: ["ownership", "learning", "reflection", "growth"],
+    },
+    {
+      text: "How do you prioritize when you have multiple deadlines competing?",
+      rubricKeywords: ["prioritize", "communicate", "triage", "deadline"],
+    },
   ],
   hr: [
-    { text: "Why are you interested in an internship at our company specifically?", rubricKeywords: ["research", "company", "mission", "product", "alignment"] },
-    { text: "What are your career goals for the next 2-3 years?", rubricKeywords: ["goal", "growth", "learning", "direction"] },
-    { text: "What kind of team environment helps you do your best work?", rubricKeywords: ["collaboration", "feedback", "team", "culture"] },
-    { text: "How do you handle receiving critical feedback on your work?", rubricKeywords: ["feedback", "openness", "improve", "example"] },
+    {
+      text: "Why are you interested in an internship at our company specifically?",
+      rubricKeywords: [
+        "research",
+        "company",
+        "mission",
+        "product",
+        "alignment",
+      ],
+    },
+    {
+      text: "What are your career goals for the next 2-3 years?",
+      rubricKeywords: ["goal", "growth", "learning", "direction"],
+    },
+    {
+      text: "What kind of team environment helps you do your best work?",
+      rubricKeywords: ["collaboration", "feedback", "team", "culture"],
+    },
+    {
+      text: "How do you handle receiving critical feedback on your work?",
+      rubricKeywords: ["feedback", "openness", "improve", "example"],
+    },
   ],
 }
 
@@ -362,11 +470,18 @@ export async function evaluateAnswer(input: {
       score: Math.max(score, 20),
       strengths:
         heuristicCoverage.length > 0
-          ? [`Mentioned key concepts: ${heuristicCoverage.slice(0, 4).join(", ")}`]
+          ? [
+              `Mentioned key concepts: ${heuristicCoverage.slice(0, 4).join(", ")}`,
+            ]
           : [],
       improvements: [
         ...(heuristicCoverage.length < input.rubricKeywords.length
-          ? [`Consider addressing: ${input.rubricKeywords.filter(k => !lower.includes(k.toLowerCase())).slice(0, 3).join(", ")}`]
+          ? [
+              `Consider addressing: ${input.rubricKeywords
+                .filter((k) => !lower.includes(k.toLowerCase()))
+                .slice(0, 3)
+                .join(", ")}`,
+            ]
           : []),
         "Heuristic evaluation mode (AI provider not configured) — scores approximate.",
       ],
@@ -387,11 +502,17 @@ ${guardUntrusted("candidate_answer", input.answer)}`,
   } catch (err) {
     console.error("[ai] answer evaluation failed:", err)
     const coverageRatio =
-      input.rubricKeywords.length === 0 ? 0.5 : heuristicCoverage.length / input.rubricKeywords.length
+      input.rubricKeywords.length === 0
+        ? 0.5
+        : heuristicCoverage.length / input.rubricKeywords.length
     return {
       score: Math.round(Math.min(Math.max(coverageRatio * 80 + 10, 20), 90)),
-      strengths: [`Referenced ${heuristicCoverage.length}/${input.rubricKeywords.length} key concepts`],
-      improvements: ["Evaluated with fallback heuristics due to AI unavailability."],
+      strengths: [
+        `Referenced ${heuristicCoverage.length}/${input.rubricKeywords.length} key concepts`,
+      ],
+      improvements: [
+        "Evaluated with fallback heuristics due to AI unavailability.",
+      ],
       followUpQuestion: null,
       keywordCoverage: heuristicCoverage,
     }
@@ -401,7 +522,7 @@ ${guardUntrusted("candidate_answer", input.answer)}`,
 // ---------- Career assistant ----------
 
 export async function assistantReply(input: {
-  history: { role: "user" | "assistant"; content: string }[]
+  history: { role: "user" | "assistant" content: string }[]
   contextDigest: string
   message: string
 }) {

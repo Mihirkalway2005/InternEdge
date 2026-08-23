@@ -12,7 +12,15 @@ import { logActivity, notify } from "@/lib/services/notifier"
 const createSchema = z.object({
   internshipId: z.string().min(1).max(64),
   status: z
-    .enum(["saved", "applied", "assessment", "interview", "hr", "offer", "rejected"])
+    .enum([
+      "saved",
+      "applied",
+      "assessment",
+      "interview",
+      "hr",
+      "offer",
+      "rejected",
+    ])
     .default("saved"),
   notes: z.string().max(4000).optional(),
 })
@@ -59,7 +67,10 @@ export const POST = handleRoute(async (req: Request) => {
         create: {
           fromStatus: null,
           toStatus: body.status,
-          note: body.status === "saved" ? "Added to tracker" : "Application created",
+          note:
+            body.status === "saved"
+              ? "Added to tracker"
+              : "Application created",
         },
       },
     },
@@ -68,10 +79,13 @@ export const POST = handleRoute(async (req: Request) => {
 
   await logActivity({
     userId,
-    action: body.status === "saved" ? "internship_saved" : "application_created",
+    action:
+      body.status === "saved" ? "internship_saved" : "application_created",
     entityType: "application",
     entityId: application.id,
-    details: `${internship.title} at ${internship.title ? "" : ""}`.trim() || internship.companyId,
+    details:
+      `${internship.title} at ${internship.title ? "" : ""}`.trim() ||
+      internship.companyId,
   })
   void (async () => {
     const company = await prisma.internship.findUnique({

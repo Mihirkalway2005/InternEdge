@@ -1,10 +1,5 @@
 import { prisma } from "@/lib/db"
-import {
-  assertOwned,
-  handleRoute,
-  json,
-  requireUser,
-} from "@/lib/api-helpers"
+import { assertOwned, handleRoute, json, requireUser } from "@/lib/api-helpers"
 
 type Params = { params: Promise<{ id: string }> }
 

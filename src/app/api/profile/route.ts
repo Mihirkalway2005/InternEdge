@@ -1,11 +1,6 @@
 import { z } from "zod"
 import { prisma } from "@/lib/db"
-import {
-  handleRoute,
-  json,
-  parseBody,
-  requireUser,
-} from "@/lib/api-helpers"
+import { handleRoute, json, parseBody, requireUser } from "@/lib/api-helpers"
 
 const workTypeSchema = z.enum(["remote", "hybrid", "onsite"])
 

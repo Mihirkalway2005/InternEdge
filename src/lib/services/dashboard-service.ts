@@ -5,10 +5,15 @@ import { computeReadiness } from "@/lib/engine/readiness"
 import { sweepDeadlines } from "./notifier"
 
 /** Build the user's match context (skills, targets, resume keywords). */
-export async function getUserMatchContext(userId: string): Promise<UserMatchContext> {
+export async function getUserMatchContext(
+  userId: string,
+): Promise<UserMatchContext> {
   const [profile, skills, primaryResume] = await Promise.all([
     prisma.profile.findUnique({ where: { userId } }),
-    prisma.skill.findMany({ where: { userId }, select: { name: true, level: true } }),
+    prisma.skill.findMany({
+      where: { userId },
+      select: { name: true, level: true },
+    }),
     prisma.resume.findFirst({
       where: { userId, status: "analyzed" },
       orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
@@ -18,8 +23,11 @@ export async function getUserMatchContext(userId: string): Promise<UserMatchCont
 
   return {
     skills,
-    targetRoles:
-      profile?.targetRoles?.length ? profile.targetRoles : profile?.targetRole ? [profile.targetRole] : [],
+    targetRoles: profile?.targetRoles?.length
+      ? profile.targetRoles
+      : profile?.targetRole
+        ? [profile.targetRole]
+        : [],
     preferredLocations: profile?.preferredLocations ?? [],
     preferredWorkType: profile?.preferredWorkType ?? null,
     graduationYear: profile?.graduationYear ?? null,
@@ -58,38 +66,48 @@ export async function computeMatches(userId: string, limit = 20) {
 
 /** Full readiness computation over real user signals. */
 export async function computeUserReadiness(userId: string) {
-  const [profile, skills, projects, experiences, interviews, roadmaps, resumes, applications] =
-    await Promise.all([
-      prisma.profile.findUnique({ where: { userId } }),
-      prisma.skill.findMany({ where: { userId } }),
-      prisma.project.findMany({ where: { userId } }),
-      prisma.experience.findMany({ where: { userId } }),
-      prisma.interview.findMany({
-        where: { userId, status: "completed" },
-        select: { score: true },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
-      prisma.roadmap.findFirst({
-        where: { userId, isActive: true },
-        include: { tasks: true },
-      }),
-      prisma.resume.findFirst({
-        where: { userId, atsScore: { not: null } },
-        orderBy: { createdAt: "desc" },
-        select: { atsScore: true },
-      }),
-      prisma.application.count({
-        where: { userId, status: { not: "saved" } },
-      }),
-    ])
+  const [
+    profile,
+    skills,
+    projects,
+    experiences,
+    interviews,
+    roadmaps,
+    resumes,
+    applications,
+  ] = await Promise.all([
+    prisma.profile.findUnique({ where: { userId } }),
+    prisma.skill.findMany({ where: { userId } }),
+    prisma.project.findMany({ where: { userId } }),
+    prisma.experience.findMany({ where: { userId } }),
+    prisma.interview.findMany({
+      where: { userId, status: "completed" },
+      select: { score: true },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    prisma.roadmap.findFirst({
+      where: { userId, isActive: true },
+      include: { tasks: true },
+    }),
+    prisma.resume.findFirst({
+      where: { userId, atsScore: { not: null } },
+      orderBy: { createdAt: "desc" },
+      select: { atsScore: true },
+    }),
+    prisma.application.count({
+      where: { userId, status: { not: "saved" } },
+    }),
+  ])
 
   const targetRole =
     profile?.targetRoles?.[0] ?? profile?.targetRole ?? "software engineer"
 
   const roadmapProgress = roadmaps?.tasks.length
     ? Math.round(
-        (roadmaps.tasks.filter((t) => t.completed).length / roadmaps.tasks.length) * 100,
+        (roadmaps.tasks.filter((t) => t.completed).length /
+          roadmaps.tasks.length) *
+          100,
       )
     : 0
 
@@ -113,10 +131,7 @@ export async function recordReadinessSnapshot(userId: string) {
     orderBy: { createdAt: "desc" },
   })
   // Throttle to one snapshot/day unless score changed significantly.
-  if (
-    latest &&
-    Date.now() - latest.createdAt.getTime() < 20 * 60 * 60 * 1000
-  ) {
+  if (latest && Date.now() - latest.createdAt.getTime() < 20 * 60 * 60 * 1000) {
     return null
   }
   const readiness = await computeUserReadiness(userId)
@@ -133,53 +148,68 @@ export async function recordReadinessSnapshot(userId: string) {
 export async function getDashboardOverview(userId: string) {
   void sweepDeadlines(userId).catch(() => {})
 
-  const [user, readiness, matches, appsByStatus, todaysTasks, upcomingDeadlines, recentActivity, latestResume, unreadNotifications] =
-    await Promise.all([
-      prisma.user.findUnique({ where: { id: userId }, select: { name: true, createdAt: true } }),
-      computeUserReadiness(userId),
-      computeMatches(userId, 3),
-      prisma.application.groupBy({
-        by: ["status"],
-        where: { userId },
-        _count: { status: true },
-      }),
-      prisma.roadmapTask.findMany({
-        where: {
-          completed: false,
-          OR: [
-            { dueDate: null },
-            { dueDate: { lte: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) } },
-          ],
-          roadmap: { userId, isActive: true },
-        },
-        include: { roadmap: { select: { targetRole: true } } },
-        orderBy: [{ dueDate: "asc" }],
-        take: 5,
-      }),
-      prisma.application.findMany({
-        where: {
-          userId,
-          status: { in: ["saved", "applied", "assessment"] },
-          internship: { isActive: true, deadline: { gt: new Date() } },
-        },
-        include: { internship: { include: { company: true } } },
-        orderBy: { internship: { deadline: "asc" } },
-        take: 3,
-      }),
-      prisma.activityLog.findMany({
-        where: { userId },
-        orderBy: { timestamp: "desc" },
-        take: 6,
-      }),
-      prisma.resume.findFirst({
-        where: { userId, atsScore: { not: null } },
-        orderBy: { createdAt: "desc" },
-        select: { atsScore: true, fileName: true, updatedAt: true },
-      }),
-      prisma.notification.count({ where: { userId, read: false } }),
-    ])
+  const [
+    user,
+    readiness,
+    matches,
+    appsByStatus,
+    todaysTasks,
+    upcomingDeadlines,
+    recentActivity,
+    latestResume,
+    unreadNotifications,
+  ] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, createdAt: true },
+    }),
+    computeUserReadiness(userId),
+    computeMatches(userId, 3),
+    prisma.application.groupBy({
+      by: ["status"],
+      where: { userId },
+      _count: { status: true },
+    }),
+    prisma.roadmapTask.findMany({
+      where: {
+        completed: false,
+        OR: [
+          { dueDate: null },
+          { dueDate: { lte: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) } },
+        ],
+        roadmap: { userId, isActive: true },
+      },
+      include: { roadmap: { select: { targetRole: true } } },
+      orderBy: [{ dueDate: "asc" }],
+      take: 5,
+    }),
+    prisma.application.findMany({
+      where: {
+        userId,
+        status: { in: ["saved", "applied", "assessment"] },
+        internship: { isActive: true, deadline: { gt: new Date() } },
+      },
+      include: { internship: { include: { company: true } } },
+      orderBy: { internship: { deadline: "asc" } },
+      take: 3,
+    }),
+    prisma.activityLog.findMany({
+      where: { userId },
+      orderBy: { timestamp: "desc" },
+      take: 6,
+    }),
+    prisma.resume.findFirst({
+      where: { userId, atsScore: { not: null } },
+      orderBy: { createdAt: "desc" },
+      select: { atsScore: true, fileName: true, updatedAt: true },
+    }),
+    prisma.notification.count({ where: { userId, read: false } }),
+  ])
 
-  const totalApplications = appsByStatus.reduce((sum, s) => sum + s._count.status, 0)
+  const totalApplications = appsByStatus.reduce(
+    (sum, s) => sum + s._count.status,
+    0,
+  )
   const activeApplications = appsByStatus
     .filter((s) => s.status !== "saved" && s.status !== "rejected")
     .reduce((sum, s) => sum + s._count.status, 0)
@@ -197,7 +227,9 @@ export async function getDashboardOverview(userId: string) {
     applications: {
       total: totalApplications,
       active: activeApplications,
-      byStatus: Object.fromEntries(appsByStatus.map((s) => [s.status, s._count.status])),
+      byStatus: Object.fromEntries(
+        appsByStatus.map((s) => [s.status, s._count.status]),
+      ),
     },
     topMatches: matches.map((m) => ({
       id: m.internship.id,

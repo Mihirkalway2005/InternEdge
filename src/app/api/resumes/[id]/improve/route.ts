@@ -43,7 +43,12 @@ export const POST = handleRoute(async (req: Request, { params }: Params) => {
 
   const resume = await prisma.resume.findUnique({
     where: { id },
-    select: { userId: true, parsedText: true, structured: true, analysis: true },
+    select: {
+      userId: true,
+      parsedText: true,
+      structured: true,
+      analysis: true,
+    },
   })
   assertOwned(resume, userId)
 
@@ -67,7 +72,7 @@ export const POST = handleRoute(async (req: Request, { params }: Params) => {
       where: { id },
       data: {
         analysis: {
-          ...(resume.analysis as object | null) ?? {},
+          ...(resume.analysis as object | null ?? {}),
           improvements,
           improvedAt: new Date().toISOString(),
         } as object,

@@ -1,49 +1,26 @@
-"use client" /* Sidebar Navigation */ /* Main Layout Area */ /* Top Header */ /* Page Content */ /* Ambient AI Assistant Drawer */
-import React, { useState } from "react"
-import { SidebarNav } from "@/components/dashboard/SidebarNav"
-import { TopHeader } from "@/components/dashboard/TopHeader"
-import { CareerAssistantDrawer } from "@/components/ai/CareerAssistantDrawer"
+import { redirect } from "next/navigation"
+import { getAuthSession } from "@/lib/session"
+import { prisma } from "@/lib/db"
+import { DashboardChrome } from "@/components/dashboard/DashboardChrome"
 
-export default function DashboardLayout({
+/**
+ * Server-side auth gate for every dashboard route.
+ * - No session → /login (middleware handles UX; this is enforcement)
+ * - Session but incomplete onboarding → /onboarding
+ */
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-  const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false)
+  const session = await getAuthSession()
+  if (!session) redirect("/login")
 
-  return (
-    <div className="min-h-screen bg-[#050505] text-[#FAFAFA] flex">
-      {}
-      <SidebarNav
-        isCollapsed={isSidebarCollapsed}
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        isMobileOpen={isMobileSidebarOpen}
-        onMobileClose={() => setIsMobileSidebarOpen(false)}
-      />
+  const profile = await prisma.profile.findUnique({
+    where: { userId: session.userId },
+    select: { onboardedAt: true },
+  })
+  if (!profile?.onboardedAt) redirect("/onboarding")
 
-      {}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 min-w-0 ${
-          isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
-        }`}
-      >
-        {}
-        <TopHeader
-          onToggleAI={() => setIsAIDrawerOpen(true)}
-          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
-        />
-
-        {}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>
-      </div>
-
-      {}
-      <CareerAssistantDrawer
-        isOpen={isAIDrawerOpen}
-        onClose={() => setIsAIDrawerOpen(false)}
-      />
-    </div>
-  )
+  return <DashboardChrome>{children}</DashboardChrome>
 }

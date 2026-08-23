@@ -5,23 +5,9 @@
 
 export type UserRole = "student" | "admin" | "mentor" | "placement_cell"
 export type WorkType = "remote" | "hybrid" | "onsite"
-export type ApplicationStatus =
-  | "saved"
-  | "applied"
-  | "assessment"
-  | "interview"
-  | "hr"
-  | "offer"
-  | "rejected"
+export type ApplicationStatus = "saved" | "applied" | "assessment" | "interview" | "hr" | "offer" | "rejected"
 
-export type SkillCategory =
-  | "frontend"
-  | "backend"
-  | "database"
-  | "devops"
-  | "ai_ml"
-  | "soft_skill"
-  | "other"
+export type SkillCategory = "frontend" | "backend" | "database" | "devops" | "ai_ml" | "soft_skill" | "other"
 export type SkillLevel = "beginner" | "intermediate" | "advanced" | "expert"
 export type InterviewTrack = "technical" | "hr" | "behavioral" | "coding"
 
@@ -116,7 +102,11 @@ export interface MatchResult {
   breakdown?: MatchBreakdown
 }
 
-export type ScoredInternship = MatchResult & { internship: InternshipWithCompany }
+export type ScoredInternship = MatchResult & {
+  internship: InternshipWithCompany
+  /** Public (unauthenticated) responses return null. */
+  match?: MatchResult | null
+}
 
 export interface ApplicationEventItem {
   id: string
@@ -149,7 +139,11 @@ export interface ATSAnalysisPayload {
   }
   matchedKeywords: string[]
   missingKeywords: string[]
-  suggestions: { title: string; detail: string; priority: "high" | "medium" | "low" }[]
+  suggestions: {
+    title: string
+    detail: string
+    priority: "high" | "medium" | "low"
+  }[]
   summary: string
 }
 
@@ -266,13 +260,13 @@ export interface ActivityLogItem {
 }
 
 export interface ReadinessComponents {
-  resumeQuality: { value: number; weight: number }
-  skillCoverage: { value: number; weight: number }
-  projectSignal: { value: number; weight: number }
-  experienceSignal: { value: number; weight: number }
-  interviewAvg: { value: number; weight: number }
-  roadmapProgress: { value: number; weight: number }
-  applicationActivity: { value: number; weight: number }
+  resumeQuality: { value: number weight: number }
+  skillCoverage: { value: number weight: number }
+  projectSignal: { value: number weight: number }
+  experienceSignal: { value: number weight: number }
+  interviewAvg: { value: number weight: number }
+  roadmapProgress: { value: number weight: number }
+  applicationActivity: { value: number weight: number }
 }
 
 export interface DashboardOverview {
@@ -308,6 +302,7 @@ export interface DashboardOverview {
     id: string
     title: string
     category?: string | null
+    skillName?: string | null
     dueDate?: string | null
     priority: number
   }>
@@ -326,19 +321,23 @@ export interface DashboardOverview {
 export interface AnalyticsResponse {
   totalInternships: number
   funnel: Record<string, number> & { total: number }
-  conversionRates: { interviewRate: number | null; offerRate: number | null }
-  weeklyApplications: { week: string; count: number }[]
+  conversionRates: { interviewRate: number | null offerRate: number | null }
+  weeklyApplications: { week: string count: number }[]
   interviews: {
     avgScore: number | null
-    trend: { score: number | null; date: string }[]
+    trend: { score: number | null date: string }[]
     count: number
   }
   resume: {
     latestAtsScore?: number | null
-    progression: { score: number | null; label: string; date: string }[]
+    progression: { score: number | null label: string date: string }[]
   }
-  readiness: { current: number; history: { score: number; date: string }[] }
-  learning: { activeDays30d: number; streak: number; roadmapProgress: number | null }
+  readiness: { current: number history: { score: number date: string }[] }
+  learning: {
+    activeDays30d: number
+    streak: number
+    roadmapProgress: number | null
+  }
 }
 
 export interface PortfolioData {
@@ -353,7 +352,12 @@ export interface PortfolioData {
   github?: string | null
   linkedin?: string | null
   externalPortfolio?: string | null
-  skills: { id: string; name: string; level: SkillLevel; category: SkillCategory }[]
+  skills: {
+    id: string
+    name: string
+    level: SkillLevel
+    category: SkillCategory
+  }[]
   projects: Project[]
   experiences: Experience[]
   resumeProjects: unknown[]
@@ -371,7 +375,7 @@ export interface PortfolioRecord {
 
 export interface AssistantReplyPayload {
   answer: string
-  suggestedActions: { label: string; href: string }[]
+  suggestedActions: { label: string href: string }[]
 }
 
 /** Standard error envelope from /api routes. */

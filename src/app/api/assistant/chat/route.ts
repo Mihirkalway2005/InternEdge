@@ -58,7 +58,9 @@ async function buildContextDigest(userId: string): Promise<string> {
         profile.university,
         profile.degree,
         profile.graduationYear ? `graduating ${profile.graduationYear}` : null,
-        profile.targetRoles?.length ? `target roles: ${profile.targetRoles.join(", ")}` : null,
+        profile.targetRoles?.length
+          ? `target roles: ${profile.targetRoles.join(", ")}`
+          : null,
         profile.preferredLocations?.length
           ? `preferred locations: ${profile.preferredLocations.join(", ")}`
           : null,
@@ -69,7 +71,9 @@ async function buildContextDigest(userId: string): Promise<string> {
     )
   }
   if (skills.length > 0) {
-    parts.push(`Skills: ${skills.map((s) => `${s.name} (${s.level})`).join(", ")}`)
+    parts.push(
+      `Skills: ${skills.map((s) => `${s.name} (${s.level})`).join(", ")}`,
+    )
   }
   if (appsByStatus.length > 0) {
     parts.push(
@@ -108,7 +112,10 @@ export const POST = handleRoute(async (req: Request) => {
     throw new ApiError(429, "Assistant limit reached (20 messages/hour)")
   }
   if (!isAIEnabled()) {
-    throw new ApiError(503, "AI provider not configured. Set GROQ_API_KEY to enable the assistant.")
+    throw new ApiError(
+      503,
+      "AI provider not configured. Set GROQ_API_KEY to enable the assistant.",
+    )
   }
 
   const body = await parseBody(req, chatSchema)
@@ -124,15 +131,28 @@ export const POST = handleRoute(async (req: Request) => {
   const reply = await assistantReply({
     history: history
       .reverse()
-      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+      .map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
     contextDigest: digest,
     message: body.message,
   })
 
   await prisma.assistantMessage.createMany({
     data: [
-      { userId, conversationId: body.conversationId, role: "user", content: body.message.slice(0, 4000) },
-      { userId, conversationId: body.conversationId, role: "assistant", content: reply.answer.slice(0, 6000) },
+      {
+        userId,
+        conversationId: body.conversationId,
+        role: "user",
+        content: body.message.slice(0, 4000),
+      },
+      {
+        userId,
+        conversationId: body.conversationId,
+        role: "assistant",
+        content: reply.answer.slice(0, 6000),
+      },
     ],
   })
 

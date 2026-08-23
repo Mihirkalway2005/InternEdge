@@ -28,7 +28,9 @@ export const GET = handleRoute(async (_req: Request, { params }: Params) => {
   const match = scoreInternship(context, internship)
 
   const application = await prisma.application.findUnique({
-    where: { userId_internshipId: { userId: session.userId, internshipId: id } },
+    where: {
+      userId_internshipId: { userId: session.userId, internshipId: id },
+    },
     select: { id: true, status: true },
   })
 

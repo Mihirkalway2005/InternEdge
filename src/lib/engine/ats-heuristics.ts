@@ -7,14 +7,36 @@ import { normalizeSkillList } from "./taxonomy"
  */
 
 const ACTION_VERBS = [
-  "built", "designed", "developed", "implemented", "led", "launched",
-  "created", "optimized", "improved", "reduced", "increased", "automated",
-  "architected", "deployed", "migrated", "integrated", "delivered",
-  "engineered", "scaled", "shipped", "mentored", "owned", "drove",
+  "built",
+  "designed",
+  "developed",
+  "implemented",
+  "led",
+  "launched",
+  "created",
+  "optimized",
+  "improved",
+  "reduced",
+  "increased",
+  "automated",
+  "architected",
+  "deployed",
+  "migrated",
+  "integrated",
+  "delivered",
+  "engineered",
+  "scaled",
+  "shipped",
+  "mentored",
+  "owned",
+  "drove",
 ]
 
 const EXPECTED_SECTIONS = [
-  "education", "experience", "project", "skill",
+  "education",
+  "experience",
+  "project",
+  "skill",
 ] as const
 
 export type ATSHeuristicResult = {
@@ -25,7 +47,9 @@ export type ATSHeuristicResult = {
   wordCount: number
 }
 
-function countQuantifiedBullets(bullets: string[]): {
+function countQuantifiedBullets(
+  bullets: string[],
+): {
   quantified: number
   total: number
 } {
@@ -34,7 +58,10 @@ function countQuantifiedBullets(bullets: string[]): {
   for (const bullet of bullets) {
     if (bullet.trim().length < 8) continue
     total++
-    if (/\d+\s?(%|percent|x|ms|k\b|hours|users|requests|rps|qps)/i.test(bullet) || /\d{2,}/.test(bullet)) {
+    if (
+      /\d+\s?(%|percent|x|ms|k\b|hours|users|requests|rps|qps)/i.test(bullet) ||
+      /\d{2,}/.test(bullet)
+    ) {
       quantified++
     }
   }
@@ -56,17 +83,21 @@ export function computeATSHeuristics(
   let verbTotal = Math.max(bullets.length, 1)
   for (const b of bullets) {
     const lower = b.toLowerCase()
-    if (ACTION_VERBS.some((v) => lower.startsWith(v) || lower.includes(` ${v}`))) {
+    if (
+      ACTION_VERBS.some((v) => lower.startsWith(v) || lower.includes(` ${v}`))
+    ) {
       verbHits++
     }
   }
-  const impactVerbs = bullets.length === 0 ? 50 : Math.round((verbHits / verbTotal) * 100)
+  const impactVerbs =
+    bullets.length === 0 ? 50 : Math.round((verbHits / verbTotal) * 100)
 
   // --- Quantification ---
   const { quantified, total } = countQuantifiedBullets(
     bullets.length > 0 ? bullets : text.split(/\.\n/),
   )
-  const quantification = total === 0 ? 30 : Math.min(Math.round((quantified / total) * 100), 100)
+  const quantification =
+    total === 0 ? 30 : Math.min(Math.round((quantified / total) * 100), 100)
 
   // --- Section completeness ---
   const lower = text.toLowerCase()
@@ -78,7 +109,8 @@ export function computeATSHeuristics(
 
   // --- Formatting proxies ---
   const lines = text.split("\n").filter((l) => l.trim())
-  const avgLineLen = lines.reduce((sum, l) => sum + l.length, 0) / Math.max(lines.length, 1)
+  const avgLineLen =
+    lines.reduce((sum, l) => sum + l.length, 0) / Math.max(lines.length, 1)
   const hasWeirdChars = (text.match(/[^\x09\x0A\x0D\x20-\x7E]/g) ?? []).length
   const formatting = Math.max(
     0,
@@ -101,7 +133,7 @@ export function computeATSHeuristics(
 export function computeKeywordCoverage(
   resumeText: string,
   roleKeywords: string[],
-): { matched: string[]; missing: string[]; coveragePct: number } {
+): { matched: string[] missing: string[] coveragePct: number } {
   const normalizedText = normalizeSkillList(resumeText.split(/[^a-zA-Z+#.]+/))
   const textSet = new Set(normalizedText)
   const matched: string[] = []

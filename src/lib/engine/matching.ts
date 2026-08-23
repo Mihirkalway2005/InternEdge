@@ -8,7 +8,7 @@ import {
 } from "./taxonomy"
 
 export type UserMatchContext = {
-  skills: { name: string; level: string }[]
+  skills: { name: string level: string }[]
   targetRoles: string[]
   preferredLocations: string[]
   preferredWorkType: string | null
@@ -124,9 +124,10 @@ export function scoreInternship(
       const l = loc.toLowerCase()
       if (l.includes("remote")) return locLower.includes("remote")
       return (
-        locLower.includes(l) || l.split(/[,\s]+/).some((part) =>
-          part.length > 3 && locLower.includes(part),
-        )
+        locLower.includes(l) ||
+        l
+          .split(/[,\s]+/)
+          .some((part) => part.length > 3 && locLower.includes(part))
       )
     })
     preferenceFit = locationMatch ? 0.75 : 0.25
@@ -187,14 +188,20 @@ export function scoreInternship(
 
   const reasons: string[] = []
   if (matchedSkills.length > 0) {
-    reasons.push(`Matches ${matchedSkills.length}/${required.length} required skills`)
+    reasons.push(
+      `Matches ${matchedSkills.length}/${required.length} required skills`,
+    )
   } else if (required.length > 0) {
     reasons.push("No required-skill overlap yet — see missing skills")
   } else {
     reasons.push("No explicit skill requirements listed")
   }
   if (roleAlignment >= 0.5) {
-    reasons.push(`Aligns with your target role${user.targetRoles[0] ? ` (${user.targetRoles[0]})` : ""}`)
+    reasons.push(
+      `Aligns with your target role${
+        user.targetRoles[0] ? ` (${user.targetRoles[0]})` : ""
+      }`,
+    )
   }
   if (preferenceFit >= 0.7) {
     reasons.push("Fits your location & work-mode preferences")

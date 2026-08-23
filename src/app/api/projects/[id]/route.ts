@@ -24,7 +24,10 @@ export const PATCH = handleRoute(async (req: Request, { params }: Params) => {
   const body = await parseBody(req, updateSchema)
   const existing = await prisma.project.findUnique({ where: { id } })
   assertOwned(existing, userId)
-  const project = await prisma.project.update({ where: { id, userId }, data: body })
+  const project = await prisma.project.update({
+    where: { id, userId },
+    data: body,
+  })
   return json(project)
 })
 

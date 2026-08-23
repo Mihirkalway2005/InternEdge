@@ -35,7 +35,10 @@ export const POST = handleRoute(async (req: Request) => {
   const { userId } = await requireUser()
 
   if (!checkRateLimit(`resume-upload:${userId}`, 5, 60 * 60 * 1000)) {
-    throw new ApiError(429, "Upload limit reached (5 per hour). Try again later.")
+    throw new ApiError(
+      429,
+      "Upload limit reached (5 per hour). Try again later.",
+    )
   }
 
   let form: FormData

@@ -76,9 +76,7 @@ export const ImprovementSuggestionSchema = z.object({
   isAddition: z.boolean(),
   confidence: z.number().min(0).max(1),
 })
-export type ImprovementSuggestion = z.infer<
-  typeof ImprovementSuggestionSchema
->
+export type ImprovementSuggestion = z.infer<typeof ImprovementSuggestionSchema>
 
 export const ImprovementSetSchema = z.object({
   suggestions: z.array(ImprovementSuggestionSchema).max(10),

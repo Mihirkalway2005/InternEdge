@@ -10,7 +10,10 @@ import {
   requireAdmin,
 } from "@/lib/api-helpers"
 import { getAuthSession } from "@/lib/session"
-import { computeMatches, getUserMatchContext } from "@/lib/services/dashboard-service"
+import {
+  computeMatches,
+  getUserMatchContext,
+} from "@/lib/services/dashboard-service"
 
 const querySchema = z.object({
   q: z.string().max(120).optional(),
@@ -23,7 +26,7 @@ const querySchema = z.object({
 })
 
 /** Public catalog; per-item match scores added when a session exists. */
-export const GET = handleRoute(async (req: Request) => {
+export const GET = handleRoute(async (req: NextRequest) => {
   const query = parseQuery(req, querySchema)
   const session = await getAuthSession()
 
@@ -38,8 +41,14 @@ export const GET = handleRoute(async (req: Request) => {
       ? {
           OR: [
             { title: { contains: query.q, mode: "insensitive" as const } },
-            { description: { contains: query.q, mode: "insensitive" as const } },
-            { company: { name: { contains: query.q, mode: "insensitive" as const } } },
+            {
+              description: { contains: query.q, mode: "insensitive" as const },
+            },
+            {
+              company: {
+                name: { contains: query.q, mode: "insensitive" as const },
+              },
+            },
           ],
         }
       : {}),
@@ -56,18 +65,36 @@ export const GET = handleRoute(async (req: Request) => {
         take: query.limit,
       }),
     ])
-    return json({ items: items.map((i) => ({ internship: i, match: null })), total, page: query.page })
+    return json({
+      items: items.map((i) => ({ internship: i, match: null })),
+      total,
+      page: query.page,
+    })
   }
 
   // Authenticated + match sort: score the full active pool deterministically.
   if (query.sort === "match") {
     const allMatches = await computeMatches(session.userId, 200)
     const filtered = allMatches.filter((m) => {
-      if (query.workType && m.internship.workType !== query.workType) return false
-      if (query.location && !m.internship.location.toLowerCase().includes(query.location.toLowerCase())) return false
-      if (query.skill && !m.internship.requiredSkills.some(s => s.toLowerCase() === query.skill!.toLowerCase())) return false
+      if (query.workType && m.internship.workType !== query.workType)
+        return false
+      if (
+        query.location &&
+        !m.internship.location
+          .toLowerCase()
+          .includes(query.location.toLowerCase())
+      )
+        return false
+      if (
+        query.skill &&
+        !m.internship.requiredSkills.some(
+          (s) => s.toLowerCase() === query.skill!.toLowerCase(),
+        )
+      )
+        return false
       if (query.q) {
-        const hay = `${m.internship.title} ${m.internship.description} ${m.internship.company.name}`.toLowerCase()
+        const hay =
+          `${m.internship.title} ${m.internship.description} ${m.internship.company.name}`.toLowerCase()
         if (!hay.includes(query.q!.toLowerCase())) return false
       }
       return true
@@ -75,7 +102,10 @@ export const GET = handleRoute(async (req: Request) => {
     return json({
       total: filtered.length,
       page: query.page,
-      items: filtered.slice((query.page - 1) * query.limit, query.page * query.limit),
+      items: filtered.slice(
+        (query.page - 1) * query.limit,
+        query.page * query.limit,
+      ),
     })
   }
 
@@ -120,7 +150,11 @@ export const POST = handleRoute(async (req: Request) => {
   await requireAdmin()
   const body = await parseBody(req, createSchema)
 
-  if (body.stipendMin != null && body.stipendMax != null && body.stipendMin > body.stipendMax) {
+  if (
+    body.stipendMin != null &&
+    body.stipendMax != null &&
+    body.stipendMin > body.stipendMax
+  ) {
     throw new ApiError(400, "stipendMin must be ≤ stipendMax")
   }
 

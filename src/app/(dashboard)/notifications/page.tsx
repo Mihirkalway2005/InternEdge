@@ -16,7 +16,7 @@ import {
   Loader2,
 } from "lucide-react"
 
-const TYPE_META: Record<string, { icon: React.ReactNode color: string }> = {
+const TYPE_META: Record<string, { icon: React.ReactNode; color: string }> = {
   deadline: {
     icon: <CalendarClock className="w-4 h-4" />,
     color: "text-amber-400 bg-amber-500/10 border-amber-500/30",

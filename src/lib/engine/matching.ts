@@ -8,7 +8,7 @@ import {
 } from "./taxonomy"
 
 export type UserMatchContext = {
-  skills: { name: string level: string }[]
+  skills: { name: string; level: string }[]
   targetRoles: string[]
   preferredLocations: string[]
   preferredWorkType: string | null

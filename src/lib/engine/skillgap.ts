@@ -6,9 +6,9 @@ import {
 } from "./taxonomy"
 
 export type SkillGapInput = {
-  skills: { name: string level: string }[]
+  skills: { name: string; level: string }[]
   targetRoles: string[]
-  demandedSkills: { skill: string demandCount: number }[]
+  demandedSkills: { skill: string; demandCount: number }[]
 }
 
 export type SkillGap = {
@@ -80,7 +80,7 @@ export function computeSkillGaps(input: SkillGapInput): SkillGap[] {
 
 /** Coverage of expected skills for a role family (0..1). */
 export function skillCoverageScore(
-  skills: { name: string level: string }[],
+  skills: { name: string; level: string }[],
   targetRole: string,
 ): number {
   const owned = new Map(skills.map((s) => [normalizeSkill(s.name), s.level]))

@@ -10,7 +10,7 @@ interface Message {
   id: string
   sender: "ai" | "user"
   text: string
-  actions?: { label: string href: string }[]
+  actions?: { label: string; href: string }[]
 }
 
 const QUICK_PROMPTS = [

@@ -260,13 +260,13 @@ export interface ActivityLogItem {
 }
 
 export interface ReadinessComponents {
-  resumeQuality: { value: number weight: number }
-  skillCoverage: { value: number weight: number }
-  projectSignal: { value: number weight: number }
-  experienceSignal: { value: number weight: number }
-  interviewAvg: { value: number weight: number }
-  roadmapProgress: { value: number weight: number }
-  applicationActivity: { value: number weight: number }
+  resumeQuality: { value: number; weight: number }
+  skillCoverage: { value: number; weight: number }
+  projectSignal: { value: number; weight: number }
+  experienceSignal: { value: number; weight: number }
+  interviewAvg: { value: number; weight: number }
+  roadmapProgress: { value: number; weight: number }
+  applicationActivity: { value: number; weight: number }
 }
 
 export interface DashboardOverview {
@@ -321,18 +321,18 @@ export interface DashboardOverview {
 export interface AnalyticsResponse {
   totalInternships: number
   funnel: Record<string, number> & { total: number }
-  conversionRates: { interviewRate: number | null offerRate: number | null }
-  weeklyApplications: { week: string count: number }[]
+  conversionRates: { interviewRate: number | null; offerRate: number | null }
+  weeklyApplications: { week: string; count: number }[]
   interviews: {
     avgScore: number | null
-    trend: { score: number | null date: string }[]
+    trend: { score: number | null; date: string }[]
     count: number
   }
   resume: {
     latestAtsScore?: number | null
-    progression: { score: number | null label: string date: string }[]
+    progression: { score: number | null; label: string; date: string }[]
   }
-  readiness: { current: number history: { score: number date: string }[] }
+  readiness: { current: number; history: { score: number; date: string }[] }
   learning: {
     activeDays30d: number
     streak: number
@@ -375,7 +375,7 @@ export interface PortfolioRecord {
 
 export interface AssistantReplyPayload {
   answer: string
-  suggestedActions: { label: string href: string }[]
+  suggestedActions: { label: string; href: string }[]
 }
 
 /** Standard error envelope from /api routes. */

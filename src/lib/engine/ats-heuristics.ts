@@ -133,7 +133,7 @@ export function computeATSHeuristics(
 export function computeKeywordCoverage(
   resumeText: string,
   roleKeywords: string[],
-): { matched: string[] missing: string[] coveragePct: number } {
+): { matched: string[]; missing: string[]; coveragePct: number } {
   const normalizedText = normalizeSkillList(resumeText.split(/[^a-zA-Z+#.]+/))
   const textSet = new Set(normalizedText)
   const matched: string[] = []

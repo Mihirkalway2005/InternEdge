@@ -1,4 +1,4 @@
-type Bucket = { count: number resetAt: number }
+type Bucket = { count: number; resetAt: number }
 
 // In-memory token buckets. Suitable for single-instance dev/small prod;
 // swap for Upstash Redis (same interface) when running multi-instance.

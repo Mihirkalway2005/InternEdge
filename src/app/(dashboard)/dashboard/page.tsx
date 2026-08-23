@@ -468,7 +468,7 @@ function Section({
   title: string
   subtitle?: string
   icon: React.ReactNode
-  action?: { href: string label: string }
+  action?: { href: string; label: string }
   children: React.ReactNode
   empty: boolean
   emptyMessage: string

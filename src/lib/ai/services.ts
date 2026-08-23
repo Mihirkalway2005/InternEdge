@@ -192,8 +192,8 @@ ${guardUntrusted("resume_text", input.text)}`,
 function buildHeuristicSuggestions(
   h: ReturnType<typeof computeATSHeuristics>,
   missing: string[],
-): { title: string detail: string priority: string }[] {
-  const out: { title: string detail: string priority: string }[] = []
+): { title: string; detail: string; priority: string }[] {
+  const out: { title: string; detail: string; priority: string }[] = []
   if (h.quantification < 50)
     out.push({
       title: "Quantify your impact",
@@ -522,7 +522,7 @@ ${guardUntrusted("candidate_answer", input.answer)}`,
 // ---------- Career assistant ----------
 
 export async function assistantReply(input: {
-  history: { role: "user" | "assistant" content: string }[]
+  history: { role: "user" | "assistant"; content: string }[]
   contextDigest: string
   message: string
 }) {

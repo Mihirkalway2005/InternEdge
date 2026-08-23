@@ -20,7 +20,7 @@ export type ReadinessInput = {
     github?: string | null
     liveDemo?: string | null
   }[]
-  experiences: { role: string company: string }[]
+  experiences: { role: string; company: string }[]
   interviewScores: number[]
   roadmapProgress: number // 0..100
   activeApplicationCount: number // status beyond saved
@@ -28,7 +28,7 @@ export type ReadinessInput = {
 
 export type ReadinessResult = {
   score: number // 0..100
-  components: Record<string, { value: number weight: number }>
+  components: Record<string, { value: number; weight: number }>
 }
 
 export function computeReadiness(input: ReadinessInput): ReadinessResult {

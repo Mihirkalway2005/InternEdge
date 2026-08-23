@@ -32,7 +32,7 @@ export const GET = handleRoute(async () => {
       where: { userId },
       _count: { status: true },
     }),
-    prisma.$queryRaw<{ week: Date count: bigint }[]>`
+    prisma.$queryRaw<{ week: Date; count: bigint }[]>`
       SELECT date_trunc('week', "savedAt") AS week, COUNT(*)::bigint AS count
       FROM applications
       WHERE "userId" = ${userId}

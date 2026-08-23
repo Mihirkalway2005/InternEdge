@@ -20,7 +20,7 @@ export function isAIEnabled(): boolean {
   return Boolean(process.env.GROQ_API_KEY)
 }
 
-type ChatMessage = { role: "system" | "user" | "assistant" content: string }
+type ChatMessage = { role: "system" | "user" | "assistant"; content: string }
 
 function extractJson(raw: string): unknown {
   const trimmed = raw.trim()

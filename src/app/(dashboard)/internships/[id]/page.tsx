@@ -45,7 +45,7 @@ type DetailResponse = {
     reasons: string[]
     breakdown?: Record<string, number>
   } | null
-  application: { id: string status: string } | null
+  application: { id: string; status: string } | null
 }
 
 export default function InternshipDetailPage() {

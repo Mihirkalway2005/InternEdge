@@ -314,7 +314,7 @@ function MiniBars({
   data,
   color,
 }: {
-  data: { label: string value: number }[]
+  data: { label: string; value: number }[]
   color: string
 }) {
   if (data.length === 0) return <Empty text="Not enough data yet." />

@@ -54,7 +54,7 @@ const COMMON_SKILLS = [
   "TensorFlow",
 ]
 
-type SkillDraft = { name: string category: string level: string }
+type SkillDraft = { name: string; category: string; level: string }
 
 export default function OnboardingPage() {
   const router = useRouter()

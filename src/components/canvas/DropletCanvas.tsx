@@ -73,8 +73,7 @@ export const DropletCanvas: React.FC<DropletCanvasProps> = ({
         ctx.arc(-8, -8, currentRadius * 0.4 * dropFactor, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
         ctx.fill();
-      }
-
+      } else {
         // Logo unfold mode (Official InternEdge geometric 'IE' emblem)
         const logoAlpha = morphProgress;
         ctx.rotate((1 - morphProgress) * Math.PI * 0.25);

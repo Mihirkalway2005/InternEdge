@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CausticBackground } from '../canvas/CausticBackground';
-import { ArrowRight, Sparkles, ShieldCheck, Zap, BarChart3, Bot } from 'lucide-react';
+import { ArrowRight, Sparkles, ShieldCheck, BarChart3, Bot } from 'lucide-react';
 
 interface Chapter02Props {
   onProceed: () => void;

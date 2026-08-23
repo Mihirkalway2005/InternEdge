@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  FileText, CalendarDays, Bot, ArrowRight, Play, RotateCcw
+  FileText, CalendarDays, Bot, ArrowRight, RotateCcw
 } from 'lucide-react';
 
 interface Chapter05Props {

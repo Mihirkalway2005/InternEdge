@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileText, Bot, BarChart2, Calendar, CheckSquare, DollarSign,
-  ChevronRight, Sparkles, Sliders, Shield
+  ChevronRight, Sparkles, Shield
 } from 'lucide-react';
 
 interface Chapter06Props {

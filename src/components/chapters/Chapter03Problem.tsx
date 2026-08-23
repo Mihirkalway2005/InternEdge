@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Globe, HardDrive, FileText, Calendar, Table, 
+  Globe, HardDrive, Calendar, Table, 
   Code2, MessageSquare, AlertCircle, Layers
 } from 'lucide-react';
 

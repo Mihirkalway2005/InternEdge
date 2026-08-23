@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useKeynoteAudio } from './hooks/useKeynoteAudio';
 import { HeaderNav } from './components/navigation/HeaderNav';
 import { Chapter01Opening } from './components/chapters/Chapter01Opening';
@@ -83,43 +83,43 @@ export default function App() {
 
       {/* Single Continuous Main Container */}
       <main className="relative z-10 w-full flex flex-col">
-        <div ref={(el) => (sectionRefs.current[0] = el)} id="opening">
+        <div ref={(el) => { sectionRefs.current[0] = el }} id="opening">
           <Chapter01Opening onProceed={() => handleScrollToSection(1)} onAudioMorph={playMorphSound} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[1] = el)} id="hero">
+        <div ref={(el) => { sectionRefs.current[1] = el }} id="hero">
           <Chapter02Hero onProceed={() => handleScrollToSection(2)} onPlayClick={playClickSound} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[2] = el)} id="problem">
+        <div ref={(el) => { sectionRefs.current[2] = el }} id="problem">
           <Chapter03Problem onProceed={() => handleScrollToSection(3)} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[3] = el)} id="transformation">
+        <div ref={(el) => { sectionRefs.current[3] = el }} id="transformation">
           <Chapter04Transformation onProceed={() => handleScrollToSection(4)} onAudioMorph={playMorphSound} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[4] = el)} id="platform">
+        <div ref={(el) => { sectionRefs.current[4] = el }} id="platform">
           <Chapter05Platform onProceed={() => handleScrollToSection(5)} onAudioClick={playClickSound} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[5] = el)} id="tour">
+        <div ref={(el) => { sectionRefs.current[5] = el }} id="tour">
           <Chapter06Tour onProceed={() => handleScrollToSection(6)} onAudioClick={playClickSound} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[6] = el)} id="ai">
+        <div ref={(el) => { sectionRefs.current[6] = el }} id="ai">
           <Chapter07AI onProceed={() => handleScrollToSection(7)} onAudioPulse={playSapphirePulse} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[7] = el)} id="technology">
+        <div ref={(el) => { sectionRefs.current[7] = el }} id="technology">
           <Chapter08Technology onProceed={() => handleScrollToSection(8)} onAudioClick={playClickSound} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[8] = el)} id="vision">
+        <div ref={(el) => { sectionRefs.current[8] = el }} id="vision">
           <Chapter09Vision onProceed={() => handleScrollToSection(9)} />
         </div>
 
-        <div ref={(el) => (sectionRefs.current[9] = el)} id="ending">
+        <div ref={(el) => { sectionRefs.current[9] = el }} id="ending">
           <Chapter10Ending onRestartKeynote={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </div>
       </main>

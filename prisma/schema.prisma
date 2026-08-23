@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../server/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  student
+  admin
+  mentor
+  placement_cell
+}
+
+enum SkillCategory {
+  frontend
+  backend
+  database
+  devops
+  ai_ml
+  soft_skill
+  other
+}
+
+enum SkillLevel {
+  beginner
+  intermediate
+  advanced
+  expert
+}
+
+enum WorkType {
+  remote
+  hybrid
+  onsite
+}
+
+enum ApplicationStatus {
+  saved
+  applied
+  assessment
+  interview
+  hr
+  offer
+  rejected
+}
+
+enum InterviewTrack {
+  technical
+  hr
+  behavioral
+  coding
+}
+
+enum NotificationType {
+  deadline
+  roadmap
+  interview
+  resume
+  system
+}
+
+model User {
+  id        String   @id @default(cuid(2))
+  email     String   @unique
+  name      String
+  avatar    String?
+  role      Role
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile       Profile?
+  skills        Skill[]
+  projects      Project[]
+  experiences   Experience[]
+  resumes       Resume[]
+  applications  Application[]
+  roadmaps      Roadmap[]
+  interviews    Interview[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Profile {
+  id             String  @id @default(cuid(2))
+  userId         String  @unique @map("user_id")
+  university     String
+  degree         String
+  branch         String
+  graduationYear Int     @map("graduation_year")
+  bio            String?
+  github         String?
+  linkedin       String?
+  portfolio      String?
+  careerGoal     String? @map("career_goal")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Skill {
+  id       String        @id @default(cuid(2))
+  userId   String        @map("user_id")
+  name     String
+  category SkillCategory
+  level    SkillLevel
+  verified Boolean       @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("skills")
+}
+
+model Project {
+  id          String   @id @default(cuid(2))
+  userId      String   @map("user_id")
+  title       String
+  description String
+  techStack   String[] @map("tech_stack")
+  github      String?
+  liveDemo    String?  @map("live_demo")
+  startDate   String   @map("start_date")
+  endDate     String?  @map("end_date")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("projects")
+}
+
+model Experience {
+  id          String  @id @default(cuid(2))
+  userId      String  @map("user_id")
+  company     String
+  role        String
+  description String
+  startDate   String  @map("start_date")
+  endDate     String? @map("end_date")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("experiences")
+}
+
+model Company {
+  id          String  @id @default(cuid(2))
+  name        String  @unique
+  logo        String?
+  website     String?
+  industry    String
+  size        String
+  description String
+
+  internships Internship[]
+
+  @@map("companies")
+}
+
+model Internship {
+  id             String   @id @default(cuid(2))
+  companyId      String   @map("company_id")
+  title          String
+  description    String
+  location       String
+  workType       WorkType @map("work_type")
+  salary         String?
+  deadline       DateTime
+  requiredSkills String[] @map("required_skills")
+  applicationUrl String?  @map("application_url")
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  @@index([companyId])
+  @@index([location])
+  @@index([deadline])
+  @@map("internships")
+}
+
+model Resume {
+  id              String   @id @default(cuid(2))
+  userId          String   @map("user_id")
+  fileId          String?  @map("file_id")
+  parsedText      String?  @map("parsed_text")
+  atsScore        Float?   @map("ats_score")
+  keywords        String[]
+  missingKeywords String[] @map("missing_keywords")
+  version         Int
+  isPrimary       Boolean  @default(false) @map("is_primary")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("resumes")
+}
+
+model Application {
+  id           String            @id @default(cuid(2))
+  userId       String            @map("user_id")
+  internshipId String            @map("internship_id")
+  status       ApplicationStatus
+  notes        String?
+  appliedAt    DateTime          @default(now()) @map("applied_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  internship Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([internshipId])
+  @@map("applications")
+}
+
+model Roadmap {
+  id              String @id @default(cuid(2))
+  userId          String @map("user_id")
+  targetRole      String @map("target_role")
+  overallProgress Float  @map("overall_progress")
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks RoadmapTask[]
+
+  @@index([userId])
+  @@map("roadmaps")
+}
+
+model RoadmapTask {
+  id        String  @id @default(cuid(2))
+  roadmapId String  @map("roadmap_id")
+  title     String
+  week      Int
+  completed Boolean @default(false)
+
+  roadmap Roadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@index([roadmapId])
+  @@map("roadmap_tasks")
+}
+
+model Interview {
+  id        String         @id @default(cuid(2))
+  userId    String         @map("user_id")
+  track     InterviewTrack
+  score     Float
+  feedback  String
+  questions Json
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("interviews")
+}
+
+model Notification {
+  id        String           @id @default(cuid(2))
+  userId    String           @map("user_id")
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}

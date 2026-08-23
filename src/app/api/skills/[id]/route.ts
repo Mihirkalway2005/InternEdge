@@ -1,21 +1,42 @@
-import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { prisma } from "@/lib/db"
-import { getCurrentUserId } from "@/lib/session"
+import {
+  ApiError,
+  assertOwned,
+  handleRoute,
+  json,
+  parseBody,
+  requireUser,
+} from "@/lib/api-helpers"
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+const updateSchema = z.object({
+  level: z.enum(["beginner", "intermediate", "advanced", "expert"]),
+})
+
+export const PATCH = handleRoute(async (req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
   const { id } = await params
-  try {
-    await prisma.skill.delete({ where: { id } })
-    return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ error: "Failed to delete skill" }, {
-      status: 500,
-    })
-  }
-}
+  const body = await parseBody(req, updateSchema)
+
+  const existing = await prisma.skill.findUnique({ where: { id } })
+  assertOwned(existing, userId)
+
+  const skill = await prisma.skill.update({
+    where: { id, userId },
+    data: { level: body.level, updatedAt: new Date() },
+  })
+  return json(skill)
+})
+
+export const DELETE = handleRoute(async (_req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
+  const { id } = await params
+
+  const existing = await prisma.skill.findUnique({ where: { id } })
+  assertOwned(existing, userId)
+
+  await prisma.skill.delete({ where: { id, userId } })
+  return json({ ok: true })
+})

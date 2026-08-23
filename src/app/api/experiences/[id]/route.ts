@@ -1,21 +1,38 @@
-import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { prisma } from "@/lib/db"
-import { getCurrentUserId } from "@/lib/session"
+import {
+  assertOwned,
+  handleRoute,
+  json,
+  parseBody,
+  requireUser,
+} from "@/lib/api-helpers"
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+const updateSchema = z.object({
+  company: z.string().min(1).max(120).optional(),
+  role: z.string().min(1).max(120).optional(),
+  description: z.string().min(1).max(4000).optional(),
+  startDate: z.string().max(40).optional(),
+  endDate: z.string().max(40).nullish(),
+})
+
+export const PATCH = handleRoute(async (req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
   const { id } = await params
-  try {
-    await prisma.experience.delete({ where: { id } })
-    return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ error: "Failed to delete experience" }, {
-      status: 500,
-    })
-  }
-}
+  const body = await parseBody(req, updateSchema)
+  const existing = await prisma.experience.findUnique({ where: { id } })
+  assertOwned(existing, userId)
+  const experience = await prisma.experience.update({ where: { id, userId }, data: body })
+  return json(experience)
+})
+
+export const DELETE = handleRoute(async (_req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
+  const { id } = await params
+  const existing = await prisma.experience.findUnique({ where: { id } })
+  assertOwned(existing, userId)
+  await prisma.experience.delete({ where: { id, userId } })
+  return json({ ok: true })
+})

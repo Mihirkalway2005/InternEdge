@@ -1,37 +1,65 @@
-import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
-import { getCurrentUserId } from "@/lib/session"
+import { ApiError, handleRoute, json, requireUser } from "@/lib/api-helpers"
+import { processResumeUpload } from "@/lib/services/resume-pipeline"
+import { checkRateLimit } from "@/lib/rate-limit"
 
-export async function GET() {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  try {
-    const resumes = await prisma.resume.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    })
-    return NextResponse.json(resumes)
-  } catch {
-    return NextResponse.json({ error: "Failed to list resumes" }, {
-      status: 500,
-    })
-  }
-}
+export const runtime = "nodejs"
+export const maxDuration = 60
 
-export async function POST(req: NextRequest) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+export const GET = handleRoute(async () => {
+  const { userId } = await requireUser()
+  const resumes = await prisma.resume.findMany({
+    where: { userId },
+    orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+    // Never ship full parsed text to list views.
+    select: {
+      id: true,
+      fileName: true,
+      atsScore: true,
+      keywords: true,
+      missingKeywords: true,
+      status: true,
+      statusMessage: true,
+      version: true,
+      isPrimary: true,
+      sizeBytes: true,
+      analysis: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  })
+  return json(resumes)
+})
+
+export const POST = handleRoute(async (req: Request) => {
+  const { userId } = await requireUser()
+
+  if (!checkRateLimit(`resume-upload:${userId}`, 5, 60 * 60 * 1000)) {
+    throw new ApiError(429, "Upload limit reached (5 per hour). Try again later.")
   }
+
+  let form: FormData
   try {
-    const body = await req.json()
-    const resume = await prisma.resume.create({ data: { ...body, userId } })
-    return NextResponse.json(resume, { status: 201 })
+    form = await req.formData()
   } catch {
-    return NextResponse.json({ error: "Failed to create resume" }, {
-      status: 500,
-    })
+    throw new ApiError(400, "Expected multipart form data with a 'file' field")
   }
-}
+  const file = form.get("file")
+  if (!(file instanceof File)) throw new ApiError(400, "Missing resume file")
+
+  const { resumeId } = await processResumeUpload({ userId, file })
+
+  const resume = await prisma.resume.findUnique({
+    where: { id: resumeId },
+    select: {
+      id: true,
+      fileName: true,
+      status: true,
+      statusMessage: true,
+      atsScore: true,
+      analysis: true,
+      structured: false as never,
+    },
+  })
+  return json(resume, 201)
+})

@@ -1,41 +1,123 @@
-import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { prisma } from "@/lib/db"
-import { getCurrentUserId } from "@/lib/session"
+import {
+  assertOwned,
+  handleRoute,
+  json,
+  parseBody,
+  requireUser,
+} from "@/lib/api-helpers"
+import { logActivity, notify } from "@/lib/services/notifier"
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  const { id } = await params
-  try {
-    const body = await req.json()
-    const application = await prisma.application.update({
-      where: { id },
-      data: body,
-    })
-    return NextResponse.json(application)
-  } catch {
-    return NextResponse.json({ error: "Failed to update application" }, {
-      status: 500,
-    })
-  }
-}
+const updateSchema = z.object({
+  status: z
+    .enum(["saved", "applied", "assessment", "interview", "hr", "offer", "rejected"])
+    .optional(),
+  notes: z.string().max(4000).nullish(),
+})
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+export const GET = handleRoute(async (_req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
   const { id } = await params
-  try {
-    await prisma.application.delete({ where: { id } })
-    return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ error: "Failed to delete application" }, {
-      status: 500,
+  const existing = await prisma.application.findUnique({
+    where: { id },
+    include: { internship: { include: { company: true } }, events: true },
+  })
+  assertOwned(existing, userId)
+  return json(existing)
+})
+
+export const PATCH = handleRoute(async (req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
+  const { id } = await params
+  const body = await parseBody(req, updateSchema)
+
+  const existing = await prisma.application.findUnique({
+    where: { id },
+    include: { internship: { select: { title: true, company: { select: { name: true } } } } },
+  })
+  assertOwned(existing, userId)
+
+  const statusChanged =
+    body.status != null && body.status !== existing.status
+
+  const application = await prisma.$transaction(async (tx) => {
+    const updated = await tx.application.update({
+      where: { id, userId },
+      data: {
+        ...(body.status != null ? { status: body.status } : {}),
+        ...(body.notes !== undefined ? { notes: body.notes } : {}),
+        ...(statusChanged ? { statusUpdatedAt: new Date() } : {}),
+      },
+      include: {
+        internship: { include: { company: true } },
+        events: { orderBy: { createdAt: "asc" } },
+      },
     })
+
+    if (statusChanged) {
+      await tx.applicationEvent.create({
+        data: {
+          applicationId: id,
+          fromStatus: existing.status,
+          toStatus: body.status!,
+          note: `Moved ${existing.status} → ${body.status}`,
+        },
+      })
+    }
+    return updated
+  })
+
+  if (statusChanged) {
+    await logActivity({
+      userId,
+      action: "application_status_changed",
+      entityType: "application",
+      entityId: id,
+      details: `${existing.internship.company.name}: ${existing.status} → ${body.status}`,
+    })
+    if (body.status === "offer") {
+      await notify({
+        userId,
+        type: "application",
+        title: `Offer! 🎉 ${existing.internship.company.name}`,
+        message: `Congratulations — your application for "${existing.internship.title}" reached the offer stage.`,
+        link: "/applications",
+        dedupeKey: `app-offer:${id}`,
+      })
+    }
+    if (body.status === "interview") {
+      await notify({
+        userId,
+        type: "interview",
+        title: `Interview stage at ${existing.internship.company.name}`,
+        message: `"${existing.internship.title}" moved to interview. Run a mock session to prepare.`,
+        link: "/interviews",
+        dedupeKey: `app-interview:${id}:${body.status}`,
+      })
+    }
   }
-}
+
+  return json(application)
+})
+
+export const DELETE = handleRoute(async (_req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
+  const { id } = await params
+  const existing = await prisma.application.findUnique({
+    where: { id },
+    select: { userId: true },
+  })
+  assertOwned(existing, userId)
+
+  await prisma.application.delete({ where: { id, userId } })
+  await logActivity({
+    userId,
+    action: "application_deleted",
+    entityType: "application",
+    entityId: id,
+  })
+  return json({ ok: true })
+})

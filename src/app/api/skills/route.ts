@@ -1,37 +1,30 @@
-import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { prisma } from "@/lib/db"
-import { getCurrentUserId } from "@/lib/session"
+import { handleRoute, json, parseBody, requireUser } from "@/lib/api-helpers"
 
-export async function GET() {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  try {
-    const skills = await prisma.skill.findMany({
-      where: { userId },
-      orderBy: { createdAt: "asc" },
-    })
-    return NextResponse.json(skills)
-  } catch {
-    return NextResponse.json({ error: "Failed to list skills" }, {
-      status: 500,
-    })
-  }
-}
+const createSchema = z.object({
+  name: z.string().min(1).max(60).transform((s) => s.trim()),
+  category: z.enum(["frontend", "backend", "database", "devops", "ai_ml", "soft_skill", "other"]),
+  level: z.enum(["beginner", "intermediate", "advanced", "expert"]),
+})
 
-export async function POST(req: NextRequest) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  try {
-    const body = await req.json()
-    const skill = await prisma.skill.create({ data: { ...body, userId } })
-    return NextResponse.json(skill, { status: 201 })
-  } catch {
-    return NextResponse.json({ error: "Failed to create skill" }, {
-      status: 500,
-    })
-  }
-}
+export const GET = handleRoute(async () => {
+  const { userId } = await requireUser()
+  const skills = await prisma.skill.findMany({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+  })
+  return json(skills)
+})
+
+export const POST = handleRoute(async (req: Request) => {
+  const { userId } = await requireUser()
+  const body = await parseBody(req, createSchema)
+
+  const skill = await prisma.skill.upsert({
+    where: { userId_name: { userId, name: body.name } },
+    create: { ...body, userId },
+    update: { level: body.level, category: body.category, updatedAt: new Date() },
+  })
+  return json(skill, 201)
+})

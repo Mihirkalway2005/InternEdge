@@ -1,24 +1,47 @@
-import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { prisma } from "@/lib/db"
-import { getCurrentUserId } from "@/lib/session"
+import {
+  ApiError,
+  assertOwned,
+  handleRoute,
+  json,
+  parseBody,
+  requireUser,
+} from "@/lib/api-helpers"
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function POST(req: NextRequest, { params }: Params) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  const { id: roadmapId } = await params
-  try {
-    const body = await req.json()
-    const task = await prisma.roadmapTask.create({
-      data: { ...body, roadmapId },
-    })
-    return NextResponse.json(task, { status: 201 })
-  } catch {
-    return NextResponse.json({ error: "Failed to create task" }, {
-      status: 500,
-    })
-  }
-}
+const createSchema = z.object({
+  title: z.string().min(1).max(160),
+  description: z.string().max(1000).nullish(),
+  category: z.string().max(60).nullish(),
+  skillName: z.string().max(60).nullish(),
+  dueDate: z.coerce.date().nullish(),
+  priority: z.number().int().min(1).max(3).default(2),
+})
+
+export const POST = handleRoute(async (req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
+  const { id } = await params
+  const body = await parseBody(req, createSchema)
+
+  // Ownership via the parent roadmap.
+  const roadmap = await prisma.roadmap.findUnique({
+    where: { id },
+    select: { userId: true, isActive: true },
+  })
+  assertOwned(roadmap, userId)
+
+  const task = await prisma.roadmapTask.create({
+    data: {
+      roadmapId: id,
+      title: body.title,
+      description: body.description ?? null,
+      category: body.category ?? null,
+      skillName: body.skillName ?? null,
+      dueDate: body.dueDate ?? null,
+      priority: body.priority,
+    },
+  })
+  return json(task, 201)
+})

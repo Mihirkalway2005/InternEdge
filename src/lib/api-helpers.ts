@@ -58,7 +58,7 @@ export async function requireAdmin(): Promise<AuthSession> {
 
 /** Validate a JSON body against a schema (throws 400 on failure). */
 export async function parseBody<T>(
-  req: NextRequest,
+  req: Request,
   schema: ZodType<T>,
 ): Promise<T> {
   let raw: unknown
@@ -88,13 +88,12 @@ export function parseQuery<T>(req: NextRequest, schema: ZodType<T>): T {
  * from missing rows to prevent resource enumeration across accounts.
  */
 export function assertOwned<T extends { userId: string }>(
-  row: T | null,
+  row: T | null | undefined,
   userId: string,
-): T {
+): asserts row is T {
   if (!row || row.userId !== userId) {
     throw new ApiError(404, "Resource not found")
   }
-  return row
 }
 
 export function getClientIp(req: NextRequest): string {

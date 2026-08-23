@@ -130,7 +130,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         callbackURL: "/dashboard",
       })
       if (res?.error) {
-        setError(`${provider} sign-in is not configured on this deployment.`)
+        setError(
+          res.error.message ||
+            `${provider} sign-in is not configured on this deployment.`,
+        )
+        return
+      }
+      if (res?.data?.url) {
+        window.location.href = res.data.url
       }
     } catch (err) {
       setError(

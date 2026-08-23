@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Lock,
   Mail,
-  Globe,
   AlertCircle,
   Loader2,
 } from "lucide-react"
@@ -48,7 +47,6 @@ export default function LoginPage() {
   const handleSocialSignIn = async (provider: "google" | "github") => {
     clearError()
     await signInSocial(provider)
-    router.push("/dashboard")
   }
 
   return (
@@ -147,18 +145,11 @@ export default function LoginPage() {
           <div className="absolute inset-0 top-1/2 border-t border-white/10" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => handleSocialSignIn("github")}
-            className="py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium flex items-center justify-center gap-2 transition text-white"
-          >
-            <Globe className="w-4 h-4 text-sky-400" /> GitHub
-          </button>
+        <div>
           <button
             type="button"
             onClick={() => handleSocialSignIn("google")}
-            className="py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium flex items-center justify-center gap-2 transition text-white"
+            className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium flex items-center justify-center gap-2 transition text-white"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path

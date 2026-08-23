@@ -24,9 +24,14 @@ function hasSessionCookie(req: NextRequest): boolean {
 }
 
 /**
- * UX-level gate only: redirects based on session cookie presence so users
- * don't land on pages that would immediately bounce. Every API route and
- * server layout still enforces real authentication independently.
+ * UX-level gate only: redirects unauthenticated users to /login when attempting
+ * to access protected routes. Every API route and server layout still enforces
+ * real authentication independently via getAuthSession().
+ *
+ * We intentionally do not redirect /login or /signup to /dashboard based solely
+ * on cookie presence, because an expired or invalid cookie in the browser would
+ * cause an infinite redirect bounce between middleware (/dashboard) and DashboardLayout (/login),
+ * which triggers "SecurityError: Attempt to use history.replaceState() more than 100 times per 10 seconds".
  */
 export function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl
@@ -36,17 +41,10 @@ export function middleware(req: NextRequest) {
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   )
 
-  if (isProtected && !authed) {
+  if (isProtected && !authed && pathname !== "/login") {
     const url = req.nextUrl.clone()
     url.pathname = "/login"
     url.search = `?next=${encodeURIComponent(pathname + search)}`
-    return NextResponse.redirect(url)
-  }
-
-  if (authed && AUTH_PAGES.includes(pathname)) {
-    const url = req.nextUrl.clone()
-    url.pathname = "/dashboard"
-    url.search = ""
     return NextResponse.redirect(url)
   }
 

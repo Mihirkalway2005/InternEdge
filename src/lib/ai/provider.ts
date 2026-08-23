@@ -12,7 +12,7 @@ export class AIServiceError extends Error {
 }
 
 const BASE_URL = process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1"
-const MODEL = process.env.LLM_MODEL || "llama-3.3-70b-versatile"
+const MODEL = process.env.LLM_MODEL || "openai/gpt-oss-120b"
 const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || 30_000)
 
 /** AI features degrade gracefully when no key is configured. */

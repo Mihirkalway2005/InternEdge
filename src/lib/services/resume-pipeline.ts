@@ -75,14 +75,12 @@ export async function processResumeUpload(input: {
   // 2. Extract text.
   let text: string
   try {
-    const { PDFParse } = await import("pdf-parse")
-    const parser = new PDFParse({ data: new Uint8Array(buffer) })
-    try {
-      const result = await parser.getText()
-      text = (result.text ?? "").replace(/\u0000/g, "").trim()
-    } finally {
-      await parser.destroy()
+    const mod = (await import("pdf-parse")) as unknown as {
+      default: (b: Buffer) => Promise<{ text?: string }>
     }
+    const pdfParse = mod.default ?? (mod as unknown as typeof mod.default)
+    const parsed = await pdfParse(buffer)
+    text = (parsed.text ?? "").replace(/\u0000/g, "").trim()
   } catch (err) {
     console.error("[resume] extraction failed:", err)
     await prisma.resume.update({

@@ -10,7 +10,7 @@ export const GET = handleRoute(async () => {
   const { userId } = await requireUser()
   const resumes = await prisma.resume.findMany({
     where: { userId },
-    orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
+    orderBy: [{ createdAt: "desc" }, { isPrimary: "desc" }],
     // Never ship full parsed text to list views.
     select: {
       id: true,

@@ -55,7 +55,17 @@ export const PATCH = handleRoute(async (req: Request, { params }: Params) => {
   const statusChanged = body.status != null && body.status !== existing.status
 
   const application = await prisma.$transaction(async (tx) => {
-    const updated = await tx.application.update({
+    if (statusChanged) {
+      await tx.applicationEvent.create({
+        data: {
+          applicationId: id,
+          fromStatus: existing.status,
+          toStatus: body.status!,
+          note: `Moved ${existing.status} → ${body.status}`,
+        },
+      })
+    }
+    return tx.application.update({
       where: { id, userId },
       data: {
         ...(body.status != null ? { status: body.status } : {}),
@@ -67,18 +77,6 @@ export const PATCH = handleRoute(async (req: Request, { params }: Params) => {
         events: { orderBy: { createdAt: "asc" } },
       },
     })
-
-    if (statusChanged) {
-      await tx.applicationEvent.create({
-        data: {
-          applicationId: id,
-          fromStatus: existing.status,
-          toStatus: body.status!,
-          note: `Moved ${existing.status} → ${body.status}`,
-        },
-      })
-    }
-    return updated
   })
 
   if (statusChanged) {

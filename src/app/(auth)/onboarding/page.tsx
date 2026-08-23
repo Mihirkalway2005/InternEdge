@@ -70,7 +70,7 @@ const INITIAL_SKILLS: SkillItem[] = [
   { name: "TypeScript", category: "frontend", level: 4 },
   { name: "React 19 & Next.js", category: "frontend", level: 4 },
   { name: "Tailwind CSS v4", category: "frontend", level: 5 },
-  { name: "Convex DB", category: "backend", level: 4 },
+  { name: "Prisma ORM", category: "backend", level: 4 },
   { name: "Python & PyTorch", category: "ai_ml", level: 3 },
   { name: "PostgreSQL", category: "database", level: 3 },
 ]
@@ -180,7 +180,35 @@ export default function OnboardingPage() {
     completeOnboarding({
       isOnboarded: true,
       name: user?.name || "Alex Rivera",
+      university: college,
+      education: college,
+      degree,
+      branch,
+      graduationYear: Number(gradYear) || undefined,
+      github,
+      linkedin,
+      portfolio,
     })
+
+    const levelToEnum = (level: number) => {
+      if (level <= 2) return "beginner"
+      if (level === 3) return "intermediate"
+      if (level === 4) return "advanced"
+      return "expert"
+    }
+    skillsList.forEach((s) => {
+      fetch("/api/skills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: s.name,
+          category: s.category,
+          level: levelToEnum(s.level),
+          verified: false,
+        }),
+      }).catch(() => {})
+    })
+
     router.push("/dashboard")
   }
 

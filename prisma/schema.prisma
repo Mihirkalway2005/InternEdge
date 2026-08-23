@@ -1,0 +1,348 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  student
+  admin
+  mentor
+  placement_cell
+}
+
+enum WorkType {
+  remote
+  hybrid
+  onsite
+}
+
+enum ApplicationStatus {
+  saved
+  applied
+  assessment
+  interview
+  hr
+  offer
+  rejected
+}
+
+enum SkillCategory {
+  frontend
+  backend
+  database
+  devops
+  ai_ml
+  soft_skill
+  other
+}
+
+enum SkillLevel {
+  beginner
+  intermediate
+  advanced
+  expert
+}
+
+enum InterviewTrack {
+  technical
+  hr
+  behavioral
+  coding
+}
+
+enum NotificationType {
+  deadline
+  roadmap
+  interview
+  resume
+  system
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          Role      @default(student)
+  avatar        String?
+  createdAt     DateTime
+  updatedAt     DateTime
+
+  sessions      Session[]
+  accounts      Account[]
+  profile       Profile?
+  skills        Skill[]
+  projects      Project[]
+  experiences   Experience[]
+  resumes       Resume[]
+  applications  Application[]
+  roadmaps      Roadmap[]
+  interviews    Interview[]
+  notifications Notification[]
+  activityLogs  ActivityLog[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verifications")
+}
+
+model Profile {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline       String?
+  university     String?
+  education      String?
+  degree         String?
+  branch         String?
+  graduationYear Int?
+  bio            String?
+  github         String?
+  linkedin       String?
+  portfolio      String?
+  careerGoal     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Skill {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  category  SkillCategory
+  level     SkillLevel
+  verified  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([userId])
+  @@map("skills")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  techStack   String[]
+  github      String?
+  liveDemo    String?
+  startDate   String
+  endDate     String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@map("projects")
+}
+
+model Experience {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company     String
+  role        String
+  description String
+  startDate   String
+  endDate     String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@map("experiences")
+}
+
+model Company {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  logo        String?
+  logoUrl     String?
+  website     String?
+  industry    String
+  size        String?
+  description String
+  createdAt   DateTime      @default(now())
+  internships Internship[]
+
+  @@map("companies")
+}
+
+model Internship {
+  id             String      @id @default(cuid())
+  companyId      String
+  company        Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  location       String
+  workType       WorkType
+  salary         String?
+  deadline       DateTime
+  requiredSkills String[]
+  applicationUrl String?
+  createdAt      DateTime    @default(now())
+  applications   Application[]
+
+  @@index([companyId])
+  @@index([location])
+  @@index([deadline])
+  @@map("internships")
+}
+
+model Resume {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileId          String?
+  parsedText      String?
+  atsScore        Float?
+  keywords        String[] @default([])
+  missingKeywords String[] @default([])
+  version         Int      @default(1)
+  isPrimary       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@map("resumes")
+}
+
+model Application {
+  id           String            @id @default(cuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  internshipId String
+  internship   Internship        @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  status       ApplicationStatus @default(saved)
+  notes        String?
+  appliedAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([internshipId])
+  @@map("applications")
+}
+
+model Roadmap {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String?
+  targetRole      String
+  overallProgress Int           @default(0)
+  createdAt       DateTime      @default(now())
+  tasks           RoadmapTask[]
+
+  @@index([userId])
+  @@map("roadmaps")
+}
+
+model RoadmapTask {
+  id          String   @id @default(cuid())
+  roadmapId   String
+  roadmap     Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  week        Int?
+  dueDate     DateTime?
+  category    String?
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([roadmapId])
+  @@map("roadmap_tasks")
+}
+
+model Interview {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track     InterviewTrack
+  title     String?
+  score     Float
+  feedback  String
+  questions Json
+  createdAt DateTime       @default(now())
+
+  @@index([userId])
+  @@map("interviews")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action     String
+  entityType String?
+  entityId   String?
+  details    String?
+  timestamp  DateTime @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+  @@map("activity_logs")
+}

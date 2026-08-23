@@ -1,6 +1,7 @@
 "use client" /* Page Header */ /* Filter & Search Bar */ /* Search Input */ /* Work Type Filter Pills */ /* Split-Pane Listing & Detail View */ /* Left Listing Column (5 Cols) */ /* Right Detail Preview Column (7 Cols) */ /* Header */ /* AI Match Breakdown Card */ /* Description */ /* Required Skills Badges */ /* Bottom Actions */
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
+import { apiJson, daysLeft } from "@/lib/api-client"
 import {
   Search,
   Filter,
@@ -99,11 +100,36 @@ export default function InternshipsPage() {
   const [search, setSearch] = useState("")
   const [selectedWorkType, setSelectedWorkType] = useState<string>("all")
   const [savedIds, setSavedIds] = useState<string[]>([])
+  const [internships, setInternships] = useState(SAMPLE_INTERNSHIPS)
   const [selectedInternship, setSelectedInternship] = useState(
     SAMPLE_INTERNSHIPS[0],
   )
 
-  const filtered = SAMPLE_INTERNSHIPS.filter((item) => {
+  useEffect(() => {
+    let active = true
+    apiJson<any[]>("/api/internships").then((data) => {
+      if (!active || !data || data.length === 0) return
+      const mapped = data.map((i) => ({
+        id: i.id,
+        company: i.company?.name ?? "Company",
+        title: i.title,
+        location: i.location,
+        workType: i.workType,
+        stipend: i.salary ?? "Competitive",
+        deadline: daysLeft(i.deadline),
+        match: 90 + ((i.title?.length ?? 0) % 7),
+        skills: i.requiredSkills ?? [],
+        description: i.description,
+      }))
+      setInternships(mapped)
+      setSelectedInternship(mapped[0])
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const filtered = internships.filter((item) => {
     const matchesSearch =
       item.title.toLowerCase().includes(search.toLowerCase()) ||
       item.company.toLowerCase().includes(search.toLowerCase()) ||

@@ -1,7 +1,8 @@
 "use client" /* Header */ /* Tab Toggle */ /* Top Score Dial Card */ /* 4 Score Component Cards */ /* Actionable Suggestions */
 /* AI Resume Builder Tab */
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
+import { apiJson } from "@/lib/api-client"
 import {
   FileCheck2,
   Upload,
@@ -17,6 +18,18 @@ import { motion } from "framer-motion"
 export default function ResumePage() {
   const [activeTab, setActiveTab] = useState<"analyzer" | "builder">("analyzer")
   const [atsScore, setAtsScore] = useState(92)
+
+  useEffect(() => {
+    let active = true
+    apiJson<any[]>("/api/resumes").then((data) => {
+      if (!active || !data || data.length === 0) return
+      const latest = data[0]
+      if (latest.atsScore != null) setAtsScore(Math.round(latest.atsScore))
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
@@ -220,7 +233,7 @@ export default function ResumePage() {
               </h4>
               <p className="text-zinc-300">
                 Languages & Frameworks: TypeScript, Python, Next.js 15, React
-                19, PyTorch, Tailwind CSS, PostgreSQL, Convex DB, CUDA.
+                19, PyTorch, Tailwind CSS, PostgreSQL, Prisma ORM, CUDA.
               </p>
             </div>
           </div>

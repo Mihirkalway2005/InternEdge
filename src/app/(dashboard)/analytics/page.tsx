@@ -1,6 +1,7 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
+import { apiJson } from "@/lib/api-client"
 import {
   BarChart3,
   TrendingUp,
@@ -10,6 +11,39 @@ import {
 } from "lucide-react"
 
 export default function AnalyticsPage() {
+  const [stats, setStats] = useState<{
+    totalInternships?: number
+    totalApplications?: number
+    latestAtsScore?: number | null
+    avgInterviewScore?: number
+    roadmapProgress?: number
+  }>({})
+
+  useEffect(() => {
+    let active = true
+    apiJson<any>("/api/analytics").then((data) => {
+      if (!active || !data) return
+      const roadmaps = data.roadmaps ?? []
+      const progress = roadmaps[0]?.tasks?.length
+        ? Math.round(
+            (roadmaps[0].tasks.filter((t: any) => t.completed).length /
+              roadmaps[0].tasks.length) *
+              100,
+          )
+        : undefined
+      setStats({
+        totalInternships: data.totalInternships,
+        totalApplications: data.totalApplications,
+        latestAtsScore: data.latestAtsScore,
+        avgInterviewScore: data.avgInterviewScore,
+        roadmapProgress: progress,
+      })
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
@@ -42,15 +76,21 @@ export default function AnalyticsPage() {
           <span className="text-xs font-semibold text-zinc-400">
             Application Conversion
           </span>
-          <p className="text-3xl font-extrabold text-white font-mono">66.7%</p>
-          <p className="text-xs text-sky-400">2 OAs out of 3 Applications</p>
+          <p className="text-3xl font-extrabold text-white font-mono">
+            {stats.totalApplications ?? 3}
+          </p>
+          <p className="text-xs text-sky-400">
+            {stats.totalInternships ?? 0} internships available
+          </p>
         </div>
 
         <div className="material-glass p-6 rounded-3xl border border-white/10 space-y-2">
           <span className="text-xs font-semibold text-zinc-400">
             Roadmap Consistency
           </span>
-          <p className="text-3xl font-extrabold text-white font-mono">92%</p>
+          <p className="text-3xl font-extrabold text-white font-mono">
+            {stats.roadmapProgress ?? 92}%
+          </p>
           <p className="text-xs text-amber-400">12 Days Active Streak</p>
         </div>
       </div>

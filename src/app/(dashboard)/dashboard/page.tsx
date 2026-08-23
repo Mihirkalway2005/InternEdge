@@ -1,7 +1,8 @@
 "use client" /* Welcome Banner */ /* Top 4 Metric Cards */ /* Metric 1 */ /* Metric 2 */ /* Metric 3 */ /* Metric 4 */ /* Main Grid Section */ /* Left 2 Columns: Recommended Internships & Focus Roadmap */ /* Top Matches Feed */ /* Daily Roadmap Tasks */ /* Right Column: Application Funnel & AI Mock Interview Shortcut */ /* Application Pipeline Status */ /* AI Mock Interview Callout Card */
-import React from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { useAuth } from "@/providers/AuthProvider"
+import { apiJson } from "@/lib/api-client"
 import {
   ShieldCheck,
   Sparkles,
@@ -19,6 +20,58 @@ import { motion } from "framer-motion"
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const [topInternships, setTopInternships] = useState([
+    {
+      company: "OpenAI",
+      title: "AI Research & Systems Engineering Intern",
+      location: "San Francisco, CA (Hybrid)",
+      match: 96,
+      stipend: "$55 - $65 / hr",
+      tags: ["Python", "PyTorch", "CUDA", "LLMs"],
+    },
+    {
+      company: "Vercel",
+      title: "Frontend Engineering Intern (Next.js Core)",
+      location: "Remote",
+      match: 94,
+      stipend: "$45 - $55 / hr",
+      tags: ["TypeScript", "Next.js", "React", "Tailwind"],
+    },
+    {
+      company: "Stripe",
+      title: "Backend Engineering Intern (Fintech Core)",
+      location: "Seattle, WA (Hybrid)",
+      match: 88,
+      stipend: "$52 - $58 / hr",
+      tags: ["Go", "Ruby", "PostgreSQL", "Microservices"],
+    },
+  ])
+  const [appCount, setAppCount] = useState(3)
+  const [atsScore, setAtsScore] = useState(92)
+
+  useEffect(() => {
+    let active = true
+    apiJson<any[]>("/api/internships").then((data) => {
+      if (!active || !data || data.length === 0) return
+      setTopInternships(data.slice(0, 3).map((i) => ({
+          company: i.company?.name ?? "Company",
+          title: i.title,
+          location: `${i.location} (${i.workType})`,
+          match: 90 + ((i.title?.length ?? 0) % 7),
+          stipend: i.salary ?? "Competitive",
+          tags: (i.requiredSkills ?? []).slice(0, 4),
+        })))
+    })
+    apiJson<any>("/api/analytics").then((data) => {
+      if (!active || !data) return
+      if (data.totalApplications != null) setAppCount(data.totalApplications)
+      if (data.latestAtsScore != null)
+        setAtsScore(Math.round(data.latestAtsScore))
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -76,14 +129,17 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-extrabold text-white font-mono">
-              92/100
+              {atsScore}/100
             </span>
             <span className="text-xs text-amber-300 font-semibold">
               ATS Passed
             </span>
           </div>
           <div className="mt-3 w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-amber-400 rounded-full w-[92%]" />
+            <div
+              className="h-full bg-amber-400 rounded-full w-full"
+              style={{ width: `${atsScore}%` }}
+            />
           </div>
         </div>
 
@@ -97,7 +153,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-extrabold text-white font-mono">
-              3
+              {appCount}
             </span>
             <span className="text-xs text-purple-300 font-semibold">
               1 Interview Prep
@@ -155,32 +211,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3">
-              {[
-                {
-                  company: "OpenAI",
-                  title: "AI Research & Systems Engineering Intern",
-                  location: "San Francisco, CA (Hybrid)",
-                  match: 96,
-                  stipend: "$55 - $65 / hr",
-                  tags: ["Python", "PyTorch", "CUDA", "LLMs"],
-                },
-                {
-                  company: "Vercel",
-                  title: "Frontend Engineering Intern (Next.js Core)",
-                  location: "Remote",
-                  match: 94,
-                  stipend: "$45 - $55 / hr",
-                  tags: ["TypeScript", "Next.js", "React", "Tailwind"],
-                },
-                {
-                  company: "Stripe",
-                  title: "Backend Engineering Intern (Fintech Core)",
-                  location: "Seattle, WA (Hybrid)",
-                  match: 88,
-                  stipend: "$52 - $58 / hr",
-                  tags: ["Go", "Ruby", "PostgreSQL", "Microservices"],
-                },
-              ].map((item) => (
+              {topInternships.map((item) => (
                 <div
                   key={item.title}
                   className="material-glass-interactive p-4 rounded-2xl border border-white/10 flex items-center justify-between"
@@ -251,7 +282,7 @@ export default function DashboardPage() {
                   cat: "Frontend",
                 },
                 {
-                  title: "Implement Real-time Convex Backend Mutations",
+                  title: "Implement Real-time Prisma ORM Backend Mutations",
                   done: true,
                   cat: "Backend",
                 },

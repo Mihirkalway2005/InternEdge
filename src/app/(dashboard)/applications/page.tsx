@@ -1,5 +1,6 @@
 "use client" /* Header */ /* Kanban Board Grid */ /* Column Title */ /* Cards in Column */ /* Quick Shift Button */ /* Application Detail Modal */
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { apiJson } from "@/lib/api-client"
 import {
   Kanban,
   Plus,
@@ -74,9 +75,51 @@ const STAGES: ApplicationItem["stage"][] = [
   "Rejected",
 ]
 
+const DB_TO_STAGE: Record<string, ApplicationItem["stage"]> = {
+  saved: "Saved",
+  applied: "Applied",
+  assessment: "Online Assessment",
+  interview: "Interview",
+  hr: "HR Round",
+  offer: "Offer",
+  rejected: "Rejected",
+}
+
+const STAGE_TO_DB: Record<ApplicationItem["stage"], string> = {
+  Saved: "saved",
+  Applied: "applied",
+  "Online Assessment": "assessment",
+  Interview: "interview",
+  "HR Round": "hr",
+  Offer: "offer",
+  Rejected: "rejected",
+}
+
 export default function ApplicationsPage() {
   const [apps, setApps] = useState<ApplicationItem[]>(INITIAL_APPLICATIONS)
   const [selectedApp, setSelectedApp] = useState<ApplicationItem | null>(null)
+
+  useEffect(() => {
+    let active = true
+    apiJson<any[]>("/api/applications").then((data) => {
+      if (!active || !data) return
+      const mapped: ApplicationItem[] = data.map((a) => ({
+        id: a.id,
+        company: a.internship?.company?.name ?? "Company",
+        role: a.internship?.title ?? "Internship",
+        location: a.internship?.location ?? "Remote",
+        stage: DB_TO_STAGE[a.status] ?? "Saved",
+        appliedDate: a.appliedAt
+          ? new Date(a.appliedAt).toLocaleDateString()
+          : "Today",
+        notes: a.notes ?? "",
+      }))
+      if (mapped.length > 0) setApps(mapped)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const moveStage = (id: string, newStage: ApplicationItem["stage"]) => {
     setApps((prev) =>
@@ -84,6 +127,11 @@ export default function ApplicationsPage() {
         item.id === id ? { ...item, stage: newStage } : item,
       ),
     )
+    if (id.startsWith("app_")) return
+    apiJson(`/api/applications/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: STAGE_TO_DB[newStage] }),
+    })
   }
 
   return (
@@ -241,6 +289,12 @@ export default function ApplicationsPage() {
                     ),
                   )
                   setSelectedApp({ ...selectedApp, notes: updatedNotes })
+                  if (!selectedApp.id.startsWith("app_")) {
+                    apiJson(`/api/applications/${selectedApp.id}`, {
+                      method: "PATCH",
+                      body: JSON.stringify({ notes: updatedNotes }),
+                    })
+                  }
                 }}
                 rows={4}
                 className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none"

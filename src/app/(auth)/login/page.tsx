@@ -15,15 +15,15 @@ import {
 import { motion } from "framer-motion"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("alex.rivera@stanford.edu")
-  const [password, setPassword] = useState("password123")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [validationError, setValidationError] = useState<string | null>(null)
   const { signInEmail, signInSocial, isLoading, error, clearError } = useAuth()
   const router = useRouter()
 
   const validateForm = () => {
     if (!email || !email.includes("@") || !email.includes(".")) {
-      setValidationError("Please enter a valid university email address.")
+      setValidationError("Please enter a valid email address.")
       return false
     }
     if (!password || password.length < 6) {
@@ -85,7 +85,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2">
-              University Email
+              Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -98,7 +98,7 @@ export default function LoginPage() {
                   if (validationError) setValidationError(null)
                 }}
                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-sky-400/50 transition"
-                placeholder="student@university.edu"
+                placeholder="name@example.com"
               />
             </div>
           </div>
@@ -117,6 +117,7 @@ export default function LoginPage() {
                   setPassword(e.target.value)
                   if (validationError) setValidationError(null)
                 }}
+                placeholder="••••••••••••"
                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-sky-400/50 transition"
               />
             </div>

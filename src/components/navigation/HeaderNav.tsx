@@ -147,7 +147,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 <input
                   type="email"
                   required
-                  placeholder="Enter your university or work email..."
+                  placeholder="Enter your email address..."
                   className="w-full px-4 py-3 rounded-xl material-glass border border-white/15 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/40 font-mono"
                 />
                 <button

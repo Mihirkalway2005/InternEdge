@@ -29,7 +29,7 @@ export default function SignupPage() {
       return false
     }
     if (!email || !email.includes("@") || !email.includes(".")) {
-      setValidationError("Please enter a valid university email address.")
+      setValidationError("Please enter a valid email address.")
       return false
     }
     if (!password || password.length < 8) {
@@ -104,7 +104,7 @@ export default function SignupPage() {
 
           <div>
             <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-2">
-              University Email
+              Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -116,7 +116,7 @@ export default function SignupPage() {
                   setEmail(e.target.value)
                   if (validationError) setValidationError(null)
                 }}
-                placeholder="alex@stanford.edu"
+                placeholder="name@example.com"
                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400/50 transition"
               />
             </div>

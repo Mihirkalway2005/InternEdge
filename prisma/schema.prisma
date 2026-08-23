@@ -54,11 +54,25 @@ enum InterviewTrack {
   coding
 }
 
+enum InterviewStatus {
+  in_progress
+  completed
+  abandoned
+}
+
+enum ResumeStatus {
+  uploaded
+  parsed
+  analyzed
+  failed
+}
+
 enum NotificationType {
   deadline
   roadmap
   interview
   resume
+  application
   system
 }
 
@@ -85,6 +99,9 @@ model User {
   interviews    Interview[]
   notifications Notification[]
   activityLogs  ActivityLog[]
+  portfolios    Portfolio[]
+  readinessSnapshots ReadinessSnapshot[]
+  assistantMessages  AssistantMessage[]
 
   @@map("users")
 }
@@ -136,22 +153,27 @@ model Verification {
 }
 
 model Profile {
-  id             String  @id @default(cuid())
-  userId         String  @unique
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  headline       String?
-  university     String?
-  education      String?
-  degree         String?
-  branch         String?
-  graduationYear Int?
-  bio            String?
-  github         String?
-  linkedin       String?
-  portfolio      String?
-  careerGoal     String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline           String?
+  university         String?
+  education          String?
+  degree             String?
+  branch             String?
+  graduationYear     Int?
+  bio                String?
+  github             String?
+  linkedin           String?
+  portfolio          String?
+  careerGoal         String?
+  targetRole         String?
+  targetRoles        String[]  @default([])
+  preferredLocations String[]  @default([])
+  preferredWorkType  WorkType?
+  onboardedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@map("profiles")
 }
@@ -165,7 +187,9 @@ model Skill {
   level     SkillLevel
   verified  Boolean       @default(false)
   createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
 
+  @@unique([userId, name])
   @@index([userId])
   @@map("skills")
 }
@@ -218,59 +242,91 @@ model Company {
 }
 
 model Internship {
-  id             String      @id @default(cuid())
+  id             String        @id @default(cuid())
   companyId      String
-  company        Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   title          String
   description    String
   location       String
   workType       WorkType
   salary         String?
+  stipendMin     Int?
+  stipendMax     Int?
   deadline       DateTime
   requiredSkills String[]
   applicationUrl String?
-  createdAt      DateTime    @default(now())
+  source         String        @default("seed")
+  isActive       Boolean       @default(true)
+  postedAt       DateTime      @default(now())
+  createdAt      DateTime      @default(now())
   applications   Application[]
 
   @@index([companyId])
   @@index([location])
   @@index([deadline])
+  @@index([isActive])
   @@map("internships")
 }
 
 model Resume {
-  id              String   @id @default(cuid())
+  id              String       @id @default(cuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName        String?
+  mimeType        String?
+  sizeBytes       Int?
   fileId          String?
+  storageKey      String?
   parsedText      String?
+  structured      Json?
   atsScore        Float?
-  keywords        String[] @default([])
-  missingKeywords String[] @default([])
-  version         Int      @default(1)
-  isPrimary       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  keywords        String[]     @default([])
+  missingKeywords String[]     @default([])
+  analysis        Json?
+  status          ResumeStatus @default(uploaded)
+  statusMessage   String?
+  version         Int          @default(1)
+  isPrimary       Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@index([userId])
   @@map("resumes")
 }
 
 model Application {
-  id           String            @id @default(cuid())
-  userId       String
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  internshipId String
-  internship   Internship        @relation(fields: [internshipId], references: [id], onDelete: Cascade)
-  status       ApplicationStatus @default(saved)
-  notes        String?
-  appliedAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  internshipId    String
+  internship      Internship        @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  status          ApplicationStatus @default(saved)
+  notes           String?
+  appliedAt       DateTime          @default(now())
+  savedAt         DateTime          @default(now())
+  statusUpdatedAt DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  events          ApplicationEvent[]
 
+  @@unique([userId, internshipId])
   @@index([userId])
   @@index([status])
   @@index([internshipId])
   @@map("applications")
+}
+
+model ApplicationEvent {
+  id            String            @id @default(cuid())
+  applicationId String
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  note          String?
+  createdAt     DateTime          @default(now())
+
+  @@index([applicationId])
+  @@index([createdAt])
+  @@map("application_events")
 }
 
 model Roadmap {
@@ -280,6 +336,7 @@ model Roadmap {
   title           String?
   targetRole      String
   overallProgress Int           @default(0)
+  isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
   tasks           RoadmapTask[]
 
@@ -288,33 +345,45 @@ model Roadmap {
 }
 
 model RoadmapTask {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   roadmapId   String
-  roadmap     Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  roadmap     Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
   title       String
   description String?
   week        Int?
   dueDate     DateTime?
   category    String?
-  completed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  skillName   String?
+  resourceUrl String?
+  priority    Int       @default(2)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
 
   @@index([roadmapId])
   @@map("roadmap_tasks")
 }
 
 model Interview {
-  id        String         @id @default(cuid())
-  userId    String
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  track     InterviewTrack
-  title     String?
-  score     Float
-  feedback  String
-  questions Json
-  createdAt DateTime       @default(now())
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track       InterviewTrack
+  status      InterviewStatus @default(in_progress)
+  title       String?
+  difficulty  String?
+  roleContext String?
+  score       Float?
+  feedback    String?
+  questions   Json
+  currentQuestionIndex Int    @default(0)
+  startedAt   DateTime        @default(now())
+  completedAt DateTime?
+  durationSec Int?
+  createdAt   DateTime        @default(now())
 
   @@index([userId])
+  @@index([status])
   @@map("interviews")
 }
 
@@ -325,9 +394,12 @@ model Notification {
   title     String
   message   String
   type      NotificationType
+  link      String?
+  dedupeKey String?
   read      Boolean          @default(false)
   createdAt DateTime         @default(now())
 
+  @@unique([userId, dedupeKey])
   @@index([userId])
   @@map("notifications")
 }
@@ -345,4 +417,46 @@ model ActivityLog {
   @@index([userId])
   @@index([timestamp])
   @@map("activity_logs")
+}
+
+model ReadinessSnapshot {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score      Float
+  components Json
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("readiness_snapshots")
+}
+
+model Portfolio {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug        String    @unique
+  headline    String?
+  bio         String?
+  data        Json
+  isPublic    Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("portfolios")
+}
+
+model AssistantMessage {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId String
+  role           String
+  content        String
+  createdAt      DateTime @default(now())
+
+  @@index([userId, conversationId, createdAt])
+  @@map("assistant_messages")
 }

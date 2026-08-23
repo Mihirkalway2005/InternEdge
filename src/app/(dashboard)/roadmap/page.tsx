@@ -1,297 +1,348 @@
-"use client" /* Page Header */ /* Progress Header Box */ /* Add Task Modal / Form */ /* Roadmap Tasks List */
-import React, { useState, useEffect } from "react"
-import { apiJson } from "@/lib/api-client"
+"use client" /* Progress header */
+
+// Group by week.
+
+import React, { useState } from "react"
+import Link from "next/link"
+import { api, useApi } from "@/lib/api-client"
+import type { RoadmapItem, RoadmapTaskItem } from "@/types"
 import {
   Compass,
   CheckCircle2,
   Circle,
   Plus,
   Sparkles,
-  BookOpen,
-  Clock,
-  Calendar,
+  Loader2,
+  AlertCircle,
+  ExternalLink,
+  X,
 } from "lucide-react"
-import { motion } from "framer-motion"
-
-interface Task {
-  id: string
-  title: string
-  description: string
-  category: string
-  completed: boolean
-  dueDate: string
-}
 
 export default function RoadmapPage() {
-  const [roadmapId, setRoadmapId] = useState<string | null>(null)
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "t1",
-      title: "Master Next.js App Router & Server Components",
-      description:
-        "Build 2 full-stack projects using Next.js 15, Server Actions, and Tailwind CSS v4.",
-      category: "Frontend",
-      completed: true,
-      dueDate: "Today",
-    },
-    {
-      id: "t2",
-      title: "Implement Real-time Prisma ORM Backend Mutations",
-      description:
-        "Learn schema design, indexed queries, and real-time client sync with Prisma + PostgreSQL.",
-      category: "Backend",
-      completed: true,
-      dueDate: "Today",
-    },
-    {
-      id: "t3",
-      title: "Practice 15 Advanced LeetCode Graph & DP Problems",
-      description:
-        "Prepare for technical coding interviews focused on Graphs, Topological Sort, and Dynamic Programming.",
-      category: "Algorithms",
-      completed: false,
-      dueDate: "In 2 days",
-    },
-    {
-      id: "t4",
-      title: "CUDA C++ Kernel Optimization Basics",
-      description:
-        "Understand GPU memory hierarchy, thread blocks, and custom PyTorch CUDA extensions for OpenAI role.",
-      category: "AI/ML Systems",
-      completed: false,
-      dueDate: "In 4 days",
-    },
-    {
-      id: "t5",
-      title: "Build & Deploy AI Agent Prototype with Embeddings",
-      description:
-        "Create an autonomous career assistant agent utilizing vector embeddings and LLM tool calling.",
-      category: "AI/ML",
-      completed: false,
-      dueDate: "In 7 days",
-    },
-  ])
+  const {
+    data: roadmaps,
+    loading,
+    error,
+    refetch,
+  } = useApi<RoadmapItem[]>("/api/roadmaps")
+  const active = roadmaps?.find((r) => r.isActive) ?? roadmaps?.[0] ?? null
+  const [generating, setGenerating] = useState(false)
+  const [genError, setGenError] = useState<string | null>(null)
 
-  const [newTaskTitle, setNewTaskTitle] = useState("")
-  const [showAddForm, setShowAddForm] = useState(false)
-
-  useEffect(() => {
-    let active = true
-    apiJson<any[]>("/api/roadmaps").then((data) => {
-      if (!active || !data || data.length === 0) return
-      const roadmap = data[0]
-      setRoadmapId(roadmap.id)
-      const mapped: Task[] = (roadmap.tasks ?? []).map((t: any) => ({
-        id: t.id,
-        title: t.title,
-        description: t.description ?? "",
-        category: t.category ?? "General",
-        completed: t.completed,
-        dueDate: t.dueDate
-          ? new Date(t.dueDate).toLocaleDateString()
-          : "Next Week",
-      }))
-      if (mapped.length > 0) setTasks(mapped)
-    })
-    return () => {
-      active = false
-    }
-  }, [])
-
-  const toggleTask = (id: string) => {
-    let nextCompleted = false
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id === id) {
-          nextCompleted = !t.completed
-          return { ...t, completed: !t.completed }
-        }
-        return t
-      }),
-    )
-    if (id.startsWith("t")) return
-    apiJson(`/api/roadmap-tasks/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ completed: nextCompleted }),
-    })
-  }
-
-  const handleAddTask = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newTaskTitle.trim()) return
-
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle,
-      description: "Custom learning target added by student.",
-      category: "General",
-      completed: false,
-      dueDate: "Next Week",
-    }
-
-    setTasks((prev) => [...prev, newTask])
-    setNewTaskTitle("")
-    setShowAddForm(false)
-
-    if (roadmapId) {
-      apiJson(`/api/roadmaps/${roadmapId}/tasks`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: newTask.title,
-          description: newTask.description,
-          category: newTask.category,
-          completed: false,
-        }),
-      }).then((created) => {
-        if (created) {
-          setTasks((prev) =>
-            prev.map((t) =>
-              t.id === newTask.id ? { ...t, id: (created as any).id } : t,
-            ),
-          )
-        }
-      })
+  const generate = async () => {
+    setGenerating(true)
+    setGenError(null)
+    try {
+      await api("/api/roadmaps", { method: "POST" })
+      refetch()
+    } catch (err) {
+      setGenError(
+        err instanceof
+          Error
+          ? err.message
+          : "Generation failed",
+      )
+    } finally {
+      setGenerating(false)
     }
   }
-
-  const completedCount = tasks.filter((t) => t.completed).length
-  const progressPercent = Math.round((completedCount / tasks.length) * 100)
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      {}
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 max-w-5xl mx-auto">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            Personalized AI Learning Roadmap{" "}
-            <Compass className="w-6 h-6 text-amber-400" />
+            Learning Roadmap <Compass className="w-6 h-6 text-amber-400" />
           </h1>
           <p className="text-sm text-zinc-400 mt-1">
-            Targeting:{" "}
-            <span className="text-amber-300 font-semibold">
-              Summer 2026 Full-Stack & AI Engineer
-            </span>
+            Generated from your actual skill gaps and target roles
           </p>
         </div>
-
         <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs transition flex items-center gap-2"
+          onClick={generate}
+          disabled={generating}
+          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-semibold text-xs transition flex items-center gap-2 disabled:opacity-60"
         >
-          <Plus className="w-4 h-4" /> Add Learning Task
+          {generating ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Sparkles className="w-4 h-4" />
+          )}
+          {active ? "Regenerate Roadmap" : "Generate Roadmap"}
         </button>
       </div>
 
-      {}
-      <div className="material-glass p-6 rounded-3xl border border-white/10 flex flex-wrap items-center justify-between gap-6">
-        <div className="space-y-1">
-          <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-            Overall Milestone Progress
-          </span>
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-extrabold text-white font-mono">
-              {progressPercent}%
-            </span>
-            <span className="text-xs text-zinc-400">
-              {completedCount} of {tasks.length} Tasks Completed
-            </span>
-          </div>
+      {genError && (
+        <div className="material-glass p-4 rounded-3xl border border-red-500/30 flex items-center gap-3 text-sm text-red-300">
+          <AlertCircle className="w-5 h-5 shrink-0" /> {genError}
         </div>
-
-        <div className="flex-1 max-w-md">
-          <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {}
-      {showAddForm && (
-        <form
-          onSubmit={handleAddTask}
-          className="material-glass p-6 rounded-3xl border border-amber-500/30 space-y-4"
-        >
-          <h3 className="text-sm font-bold text-white">
-            Add Custom Milestone Task
-          </h3>
-          <input
-            type="text"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            placeholder="e.g. Implement Distributed Caching with Redis..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
-          />
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setShowAddForm(false)}
-              className="px-4 py-2 rounded-xl bg-white/5 text-xs text-zinc-300"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-amber-500 text-black font-bold text-xs"
-            >
-              Save Task
-            </button>
-          </div>
-        </form>
       )}
 
-      {}
-      <div className="space-y-4">
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            onClick={() => toggleTask(task.id)}
-            className={`cursor-pointer p-5 rounded-3xl border transition-all duration-300 flex items-start justify-between ${
-              task.completed
-                ? "bg-white/[0.02] border-white/5 opacity-75"
-                : "material-glass border-white/10 hover:border-amber-500/40"
-            }`}
-          >
-            <div className="flex items-start gap-4">
-              <button className="mt-1">
-                {task.completed ? (
-                  <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                ) : (
-                  <Circle className="w-6 h-6 text-zinc-500 hover:text-amber-400" />
-                )}
-              </button>
-
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h3
-                    className={`text-sm font-bold ${
-                      task.completed
-                        ? "line-through text-zinc-400"
-                        : "text-white"
-                    }`}
-                  >
-                    {task.title}
-                  </h3>
-                  <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] text-zinc-300">
-                    {task.category}
-                  </span>
-                </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  {task.description}
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+        </div>
+      ) : !active ? (
+        <div className="material-glass p-10 rounded-3xl border border-dashed border-white/15 text-center space-y-3">
+          <Compass className="w-8 h-8 mx-auto text-zinc-600" />
+          <h3 className="text-base font-bold text-white">No roadmap yet</h3>
+          <p className="text-xs text-zinc-500 max-w-md mx-auto">
+            Hit{" "}
+            <span className="text-amber-300 font-bold">Generate Roadmap</span> —
+            we&apos;ll analyze your skills vs the roles you&apos;re targeting
+            (and internships you&apos;ve saved), then build a week-by-week plan
+            closing your biggest gaps first.
+          </p>
+        </div>
+      ) : (
+        <>
+          {}
+          <div className="material-glass p-6 rounded-3xl border border-white/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-white">
+                  {active.title ??
+                    `${active.targetRole} Readiness`}
+                </h2>
+                <p className="text-xs text-zinc-500">
+                  Target role: {active.targetRole}
                 </p>
               </div>
-            </div>
-
-            <div className="text-right shrink-0">
-              <span className="text-[11px] text-zinc-400 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-zinc-500" /> {task.dueDate}
+              <span className="text-2xl font-extrabold text-emerald-400 font-mono">
+                {active.overallProgress}%
               </span>
             </div>
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500"
+                style={{ width: `${active.overallProgress}%` }}
+              />
+            </div>
           </div>
-        ))}
-      </div>
+
+          <TaskList
+            tasks={active.tasks}
+            onChanged={refetch}
+            roadmapId={active.id}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+function TaskList({
+  tasks,
+  onChanged,
+  roadmapId,
+}: {
+  tasks: RoadmapTaskItem[]
+  onChanged: () => void
+  roadmapId: string
+}) {
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [showAdd, setShowAdd] = useState(false)
+  const [newTitle, setNewTitle] = useState("")
+  const [adding, setAdding] = useState(false)
+
+  const toggle = async (task: RoadmapTaskItem) => {
+    setBusyId(task.id)
+    try {
+      await api(`/api/roadmap-tasks/${task.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ completed: !task.completed }),
+      })
+      onChanged()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const addTask = async () => {
+    if (!newTitle.trim()) return
+    setAdding(true)
+    try {
+      await api(`/api/roadmaps/${roadmapId}/tasks`, {
+        method: "POST",
+        body: JSON.stringify({ title: newTitle.trim() }),
+      })
+      setNewTitle("")
+      setShowAdd(false)
+      onChanged()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setAdding(false)
+    }
+  }
+  const weeks = new Map<number, RoadmapTaskItem[]>()
+  for (const t of tasks) {
+    const w = t.week ?? 0
+    if (!weeks.has(w)) weeks.set(w, [])
+    weeks.get(w)!.push(t)
+  }
+  const sortedWeeks = [...weeks.keys()].sort((a, b) => a - b)
+
+  return (
+    <div className="space-y-6">
+      {sortedWeeks.map((week) => (
+        <div
+          key={week}
+          className="material-glass p-6 rounded-3xl border border-white/10 space-y-4"
+        >
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            {week > 0 ? `Week ${week}` : "Extra Tasks"}
+            <span className="text-[10px] font-normal normal-case text-zinc-500">
+              {
+                tasks
+                  .filter((t) => (t.week ?? 0) === week)
+                  .filter((t) => t.completed).length
+              }
+              /{tasks.filter((t) => (t.week ?? 0) === week).length} done
+            </span>
+          </h3>
+
+          <div className="space-y-3">
+            {[...weeks.get(week)!]
+              .sort((a, b) => a.priority - b.priority)
+              .map((task) => (
+                <div
+                  key={task.id}
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 ${
+                    task.completed
+                      ? "bg-emerald-500/[0.04] border-emerald-500/20"
+                      : "bg-white/5 border-white/10"
+                  }`}
+                >
+                  <button
+                    onClick={() => toggle(task)}
+                    disabled={busyId === task.id}
+                    className="flex items-center gap-3 min-w-0 text-left group"
+                  >
+                    {busyId === task.id ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-sky-400 shrink-0" />
+                    ) : task.completed ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-zinc-600 group-hover:text-sky-400 shrink-0 transition" />
+                    )}
+                    <div className="min-w-0">
+                      <p
+                        className={`text-xs font-semibold truncate ${
+                          task.completed
+                            ? "text-zinc-500 line-through"
+                            : "text-white"
+                        }`}
+                      >
+                        {task.title}
+                      </p>
+                      <span className="text-[10px] text-zinc-500 flex items-center gap-1.5">
+                        {task.category && <>{task.category} ·</>}
+                        {task.skillName && (
+                          <span className="text-sky-400/80">
+                            {task.skillName} ·
+                          </span>
+                        )}
+                        {task.dueDate && (
+                          <>
+                            due {new Date(task.dueDate).toLocaleDateString()} ·
+                          </>
+                        )}
+                        {task.priority === 1 && (
+                          <span className="text-red-300">high priority</span>
+                        )}
+                        {!task.category &&
+                          !task.skillName &&
+                          !task.dueDate &&
+                          task.priority !== 1 &&
+                          "self-paced"}
+                      </span>
+                    </div>
+                  </button>
+                  <div className="shrink-0 flex items-center gap-2">
+                    {task.resourceUrl && (
+                      <a
+                        href={task.resourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Open resource"
+                        className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {task.priority === 1 && !task.completed && (
+                      <span className="px-2 py-0.5 rounded-md bg-red-500/10 text-red-300 text-[9px] font-bold uppercase">
+                        P1
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      ))}
+
+      <button
+        onClick={() => setShowAdd(true)}
+        className="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-dashed border-white/20 text-xs font-semibold text-zinc-300 flex items-center justify-center gap-2"
+      >
+        <Plus className="w-4 h-4" /> Add Your Own Task
+      </button>
+
+      {showAdd && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowAdd(false)}
+        >
+          <div
+            className="material-glass p-6 rounded-3xl border border-white/10 max-w-md w-full space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white">New task</h3>
+              <button onClick={() => setShowAdd(false)}>
+                <X className="w-4 h-4 text-zinc-400" />
+              </button>
+            </div>
+            <input
+              autoFocus
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && void addTask()}
+              placeholder="e.g. Finish React Server Components tutorial"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-sky-400"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowAdd(false)}
+                className="px-4 py-2 rounded-xl bg-white/5 text-xs font-semibold text-zinc-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addTask}
+                disabled={adding || !newTitle.trim()}
+                className="px-5 py-2 rounded-xl bg-amber-500 text-black font-bold text-xs flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {adding ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : null}{" "}
+                Add Task
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <p className="text-center text-[11px] text-zinc-600">
+        Completed tasks raise your AI Readiness Score ·{" "}
+        <Link href="/dashboard" className="text-sky-400 hover:underline">
+          see it on your dashboard →
+        </Link>
+      </p>
     </div>
   )
 }

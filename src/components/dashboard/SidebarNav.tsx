@@ -1,6 +1,8 @@
 "use client" /* Header & Logo */ /* Navigation Items */ /* Tooltip for collapsed mode */ /* Footer Vector Widget */ /* Desktop Fixed Sidebar */ /* Mobile Drawer Overlay */
 import React from "react"
 import Link from "next/link"
+import { useApi } from "@/lib/api-client"
+import type { DashboardOverview } from "@/types"
 import { usePathname } from "next/navigation"
 import { InternEdgeLogo } from "@/components/brand/InternEdgeLogo"
 import {
@@ -146,19 +148,7 @@ export function SidebarNav({
       </div>
 
       {}
-      {!isCollapsed && (
-        <div className="p-3.5 rounded-2xl material-titanium border border-white/10 space-y-2 relative overflow-hidden">
-          <div className="flex items-center gap-2 text-amber-300 text-xs font-bold">
-            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" /> AI
-            Readiness Boost
-          </div>
-          <p className="text-[11px] text-zinc-400 leading-relaxed">
-            Your readiness score increased by{" "}
-            <span className="text-emerald-400 font-semibold">+14%</span> this
-            week!
-          </p>
-        </div>
-      )}
+      {!isCollapsed && <ReadinessWidget />}
     </aside>
   )
 
@@ -193,5 +183,35 @@ export function SidebarNav({
         )}
       </AnimatePresence>
     </>
+  )
+}
+
+
+function ReadinessWidget() {
+  const { data } = useApi<DashboardOverview>("/api/dashboard")
+  if (!data) return null
+  const score = Math.round(data.readiness.score)
+  const weakest = Object.entries(data.readiness.components)
+    .filter(([, c]) => c.weight > 0)
+    .sort((a, b) => a[1].value - b[1].value)[0]
+  return (
+    <div className="p-3.5 rounded-2xl material-titanium border border-white/10 space-y-2 relative overflow-hidden">
+      <div className="flex items-center justify-between text-xs font-bold">
+        <span className="text-amber-300 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" /> AI
+          Readiness
+        </span>
+        <span className="font-mono text-white">{score}%</span>
+      </div>
+      {weakest && (
+        <p className="text-[11px] text-zinc-400 leading-relaxed">
+          Focus on{" "}
+          <span className="text-sky-300 font-semibold">
+            {weakest[0].replace(/([A-Z])/g, " $1").toLowerCase()}
+          </span>{" "}
+          to raise your score.
+        </p>
+      )}
+    </div>
   )
 }

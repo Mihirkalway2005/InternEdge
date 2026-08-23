@@ -1,211 +1,268 @@
-"use client" /* Back Button */ /* Main Glass Header */ /* AI Analysis Box */ /* Detailed Sections */
-import React, { useState, useEffect, use } from "react"
+"use client"
+
+import React, { useCallback, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { apiJson } from "@/lib/api-client"
+import { useParams, useRouter } from "next/navigation"
+import { api, useApi, daysLeft } from "@/lib/api-client"
+import type { ApplicationItem } from "@/types"
 import {
   ArrowLeft,
-  ShieldCheck,
-  Building2,
   MapPin,
-  DollarSign,
   Calendar,
+  DollarSign,
+  ShieldCheck,
   CheckCircle2,
-  PlusCircle,
-  ExternalLink,
-  Sparkles,
-  Zap,
+  Circle,
+  Bookmark,
+  Loader2,
+  AlertCircle,
 } from "lucide-react"
 
-export default function InternshipDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = use(params)
-  const router = useRouter()
-  const [addedToRoadmap, setAddedToRoadmap] = useState(false)
-  const [addedToTracker, setAddedToTracker] = useState(false)
-  const [internship, setInternship] = useState<any>(null)
-
-  useEffect(() => {
-    let active = true
-    apiJson<any>(`/api/internships/${id}`).then((data) => {
-      if (active && data) setInternship(data)
-    })
-    return () => {
-      active = false
+type DetailResponse = {
+  internship: {
+    id: string
+    title: string
+    description: string
+    location: string
+    workType: string
+    salary?: string | null
+    stipendMin?: number | null
+    stipendMax?: number | null
+    deadline: string
+    requiredSkills: string[]
+    applicationUrl?: string | null
+    company: {
+      name: string
+      website?: string | null
+      description: string
+      industry: string
     }
-  }, [id])
-
-  const company = internship?.company?.name ?? "OpenAI"
-  const title = internship?.title ?? "AI Research & Systems Engineering Intern"
-  const workType = internship?.workType ?? "hybrid"
-  const location = internship?.location ?? "San Francisco, CA"
-  const skills = internship?.requiredSkills ?? [
-    "Python",
-    "PyTorch",
-    "Distributed Systems",
-    "LLMs",
-    "CUDA",
-  ]
-
-  const handleTrackApplication = () => {
-    setAddedToTracker(true)
-    apiJson("/api/applications", {
-      method: "POST",
-      body: JSON.stringify({ internshipId: id, status: "saved" }),
-    })
-    setTimeout(() => router.push("/applications"), 1000)
   }
+  match: {
+    score: number
+    matchedSkills: string[]
+    missingSkills: string[]
+    reasons: string[]
+    breakdown?: Record<string, number>
+  } | null
+  application: { id: string; status: string } | null
+}
+
+export default function InternshipDetailPage() {
+  const params = useParams<{ id: string }>()
+  const router = useRouter()
+  const { data, loading, error, refetch } = useApi<DetailResponse>(
+    `/api/internships/${params.id}`,
+  )
+  const [busy, setBusy] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+
+  const addToTracker = useCallback(async () => {
+    if (!data) return
+    setBusy(true)
+    setActionError(null)
+    try {
+      await api("/api/applications", {
+        method: "POST",
+        body: JSON.stringify({
+          internshipId: data.internship.id,
+          status: "saved",
+        }),
+      })
+      refetch()
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to add")
+    } finally {
+      setBusy(false)
+    }
+  }, [data, refetch])
+
+  if (loading)
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+      </div>
+    )
+  if (error || !data)
+    return (
+      <div className="max-w-3xl mx-auto material-glass p-8 rounded-3xl border border-red-500/30 space-y-3">
+        <AlertCircle className="w-6 h-6 text-red-400" />
+        <p className="text-sm font-bold text-white">
+          Couldn&apos;t load this internship
+        </p>
+        <p className="text-xs text-zinc-400">{error ?? "Not found"}</p>
+        <Link
+          href="/internships"
+          className="text-xs text-sky-400 hover:underline"
+        >
+          ← Back to discovery
+        </Link>
+      </div>
+    )
+
+  const { internship, match, application } = data
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {}
+    <div className="space-y-8 max-w-4xl mx-auto">
       <Link
         href="/internships"
-        className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition"
+        className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white font-semibold"
       >
-        <ArrowLeft className="w-4 h-4" /> Back to Internships
+        <ArrowLeft className="w-3.5 h-3.5" /> Back to discovery
       </Link>
 
-      {}
-      <div className="material-glass p-8 rounded-3xl border border-white/10 space-y-6 relative overflow-hidden">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-sky-400">{company}</span>
-              <span className="text-zinc-500">•</span>
-              <span className="text-xs text-zinc-400 uppercase tracking-wider">
-                {workType} ({location})
-              </span>
-            </div>
-            <h1 className="text-2xl font-extrabold text-white">{title}</h1>
-            <p className="text-xs text-zinc-400">
-              Application Deadline: 25 Days Remaining • Stipend: $55 - $65 / hr
-            </p>
-          </div>
-
-          <div className="text-right space-y-1">
-            <div className="px-4 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-sm font-bold font-mono inline-block">
-              96% AI Match
-            </div>
-            <p className="text-[10px] text-zinc-500">
-              High Conversion Probability
-            </p>
-          </div>
-        </div>
-
-        {}
-        <div className="material-titanium p-6 rounded-2xl border border-sky-500/30 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-sky-400" />
-              <h3 className="text-sm font-bold text-white">
-                AI Career Vector Insights
-              </h3>
-            </div>
-            <span className="text-xs text-sky-300 font-mono">
-              Estimated Prep: 4 Days
+      <div className="material-glass p-8 rounded-3xl border border-white/10 space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-1 min-w-0">
+            <span className="text-sm font-bold text-sky-400">
+              {internship.company.name}
             </span>
+            <h1 className="text-2xl font-extrabold text-white">
+              {internship.title}
+            </h1>
+            <div className="flex flex-wrap gap-4 text-xs text-zinc-400 pt-2">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" />
+                {internship.location} · {internship.workType}
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                {daysLeft(internship.deadline)}
+              </span>
+              {(internship.salary || internship.stipendMin != null) && (
+                <span className="flex items-center gap-1">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  {internship.salary ??
+                    `${internship.stipendMin}–${internship.stipendMax}`}
+                </span>
+              )}
+            </div>
           </div>
-
-          <p className="text-xs text-zinc-300 leading-relaxed">
-            Your candidate profile is strongly aligned with this role. You
-            possess{" "}
-            <span className="text-sky-400 font-semibold">
-              4 out of 5 required core skills
-            </span>{" "}
-            (Python, PyTorch, Distributed Systems, LLMs). Adding{" "}
-            <span className="text-amber-400 font-semibold">
-              CUDA C++ Optimization
-            </span>{" "}
-            to your weekly roadmap will raise your match score to 99%.
-          </p>
-
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              onClick={() => setAddedToRoadmap(true)}
-              className={`px-4 py-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition ${
-                addedToRoadmap
-                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                  : "bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30"
+          {match && (
+            <div
+              className={`px-4 py-2 rounded-full text-sm font-bold font-mono border ${
+                match.score >= 70
+                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                  : match.score >= 45
+                    ? "bg-sky-500/20 text-sky-300 border-sky-500/30"
+                    : "bg-white/10 text-zinc-300 border-white/10"
               }`}
             >
-              {addedToRoadmap ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Added to
-                  Learning Roadmap
-                </>
-              ) : (
-                <>
-                  <PlusCircle className="w-4 h-4" /> Add Missing Skill (CUDA) to
-                  Roadmap
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={handleTrackApplication}
-              className={`px-4 py-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition ${
-                addedToTracker
-                  ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
-                  : "bg-white/5 hover:bg-white/10 border-white/10 text-white"
-              }`}
-            >
-              {addedToTracker ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 text-sky-400" /> Added to
-                  Kanban Tracker!
-                </>
-              ) : (
-                <>
-                  <Zap className="w-4 h-4 text-sky-400" /> Track Application on
-                  Kanban
-                </>
-              )}
-            </button>
-          </div>
+              <ShieldCheck className="w-4 h-4 inline mr-1" />
+              {match.score}% Match
+            </div>
+          )}
         </div>
 
-        {}
-        <div className="space-y-6 pt-4">
-          <div>
-            <h3 className="text-sm font-bold text-white mb-2 uppercase tracking-wider">
-              Responsibilities
-            </h3>
-            <ul className="list-disc list-inside text-xs text-zinc-300 space-y-1.5 leading-relaxed">
-              <li>
-                Architect high-throughput GPU inference pipelines for
-                large-scale language models.
-              </li>
-              <li>
-                Implement distributed training algorithms using PyTorch and CUDA
-                kernels.
-              </li>
-              <li>
-                Collaborate with AI safety researchers to evaluate model
-                robustness and alignment benchmarks.
-              </li>
-            </ul>
+        {application ? (
+          <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-between">
+            <p className="text-xs font-bold text-purple-200 capitalize">
+              In your tracker · stage: {application.status}
+            </p>
+            <Link
+              href="/applications"
+              className="text-xs text-purple-300 hover:underline font-semibold"
+            >
+              Open Kanban →
+            </Link>
           </div>
+        ) : (
+          <button
+            onClick={addToTracker}
+            disabled={busy}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white font-bold text-xs flex items-center gap-2 hover:opacity-95 disabled:opacity-60"
+          >
+            {busy ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Bookmark className="w-4 h-4" />
+            )}
+            Add to Application Tracker
+          </button>
+        )}
+        {actionError && <p className="text-xs text-red-300">{actionError}</p>}
 
+        {match && (
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+              Match breakdown
+            </h4>
+            {match.reasons.map((r) => (
+              <p
+                key={r}
+                className="text-[11px] text-zinc-300 flex items-start gap-1.5"
+              >
+                <span className="text-sky-400">•</span>
+                {r}
+              </p>
+            ))}
+          </div>
+        )}
+
+        <div>
+          <h3 className="text-base font-bold text-white mb-2">
+            About the role
+          </h3>
+          <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-line">
+            {internship.description}
+          </p>
+        </div>
+
+        <div>
+          <h3 className="text-base font-bold text-white mb-2">
+            About {internship.company.name}
+          </h3>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            {internship.company.description}
+          </p>
+        </div>
+
+        {internship.requiredSkills.length > 0 && (
           <div>
-            <h3 className="text-sm font-bold text-white mb-2 uppercase tracking-wider">
+            <h3 className="text-base font-bold text-white mb-2">
               Requirements
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              {skills.map((skill) => (
-                <div
-                  key={skill}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-xs text-white"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-sky-400" /> {skill}
-                </div>
-              ))}
+              {internship.requiredSkills.map((skill: string) => {
+                const has = match?.matchedSkills.includes(skill.toLowerCase())
+                return (
+                  <div
+                    key={skill}
+                    className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-xs text-white"
+                  >
+                    {has ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    ) : (
+                      <Circle className="w-4 h-4 text-zinc-600 shrink-0" />
+                    )}{" "}
+                    {skill}
+                  </div>
+                )
+              })}
             </div>
           </div>
-        </div>
+        )}
+
+        {match?.missingSkills && match.missingSkills.length > 0 && (
+          <Link
+            href="/roadmap"
+            className="block p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 hover:bg-amber-500/15 transition"
+          >
+            You&apos;re missing {match.missingSkills.length} skills for this
+            role — generate a learning roadmap →
+          </Link>
+        )}
+
+        {internship.applicationUrl && (
+          <a
+            href={internship.applicationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-black font-bold text-xs text-center"
+          >
+            Apply on Company Site ↗
+          </a>
+        )}
       </div>
     </div>
   )

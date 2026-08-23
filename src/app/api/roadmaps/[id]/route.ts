@@ -1,43 +1,34 @@
-import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { prisma } from "@/lib/db"
-import { getCurrentUserId } from "@/lib/session"
+import {
+  assertOwned,
+  handleRoute,
+  json,
+  parseBody,
+  requireUser,
+} from "@/lib/api-helpers"
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function GET(_req: NextRequest, { params }: Params) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+export const GET = handleRoute(async (_req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
   const { id } = await params
-  try {
-    const roadmap = await prisma.roadmap.findUnique({
-      where: { id },
-      include: { tasks: { orderBy: { createdAt: "asc" } } },
-    })
-    if (!roadmap) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 })
-    }
-    return NextResponse.json(roadmap)
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch roadmap" }, {
-      status: 500,
-    })
-  }
-}
+  const roadmap = await prisma.roadmap.findUnique({
+    where: { id },
+    include: { tasks: { orderBy: [{ week: "asc" }, { priority: "asc" }] } },
+  })
+  assertOwned(roadmap, userId)
+  return json(roadmap)
+})
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+export const DELETE = handleRoute(async (_req: Request, { params }: Params) => {
+  const { userId } = await requireUser()
   const { id } = await params
-  try {
-    await prisma.roadmap.delete({ where: { id } })
-    return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ error: "Failed to delete roadmap" }, {
-      status: 500,
-    })
-  }
-}
+  const existing = await prisma.roadmap.findUnique({
+    where: { id },
+    select: { userId: true },
+  })
+  assertOwned(existing, userId)
+  await prisma.roadmap.delete({ where: { id, userId } })
+  return json({ ok: true })
+})

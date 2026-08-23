@@ -1,50 +1,38 @@
-import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import {
+  handleRoute,
+  json,
+  ApiError,
+  requireAdmin,
+  parseBody,
+} from "@/lib/api-helpers"
+import { z } from "zod"
+import { getAuthSession } from "@/lib/session"
+import { getUserMatchContext } from "@/lib/services/dashboard-service"
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export const GET = handleRoute(async (_req: Request, { params }: Params) => {
   const { id } = await params
-  try {
-    const internship = await prisma.internship.findUnique({
-      where: { id },
-      include: { company: true },
-    })
-    if (!internship) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 })
-    }
-    return NextResponse.json(internship)
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch internship" }, {
-      status: 500,
-    })
-  }
-}
+  const internship = await prisma.internship.findUnique({
+    where: { id, isActive: true },
+    include: { company: true },
+  })
+  if (!internship) throw new ApiError(404, "Internship not found")
 
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const { id } = await params
-  try {
-    const body = await req.json()
-    const internship = await prisma.internship.update({
-      where: { id },
-      data: body,
-    })
-    return NextResponse.json(internship)
-  } catch {
-    return NextResponse.json({ error: "Failed to update internship" }, {
-      status: 500,
-    })
-  }
-}
+  const session = await getAuthSession()
+  if (!session) return json({ internship, match: null })
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const { id } = await params
-  try {
-    await prisma.internship.delete({ where: { id } })
-    return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ error: "Failed to delete internship" }, {
-      status: 500,
-    })
-  }
-}
+  const context = await getUserMatchContext(session.userId)
+  const { scoreInternship } = await import("@/lib/engine/matching")
+  const match = scoreInternship(context, internship)
+
+  const application = await prisma.application.findUnique({
+    where: {
+      userId_internshipId: { userId: session.userId, internshipId: id },
+    },
+    select: { id: true, status: true },
+  })
+
+  return json({ internship, match, application })
+})

@@ -2,6 +2,11 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { useAuth } from "@/providers/AuthProvider"
+import { useApi } from "@/lib/api-client"
+import type {
+  DashboardOverview,
+  NotificationItem as NotificationType,
+} from "@/types"
 import {
   Search,
   Bell,
@@ -10,10 +15,8 @@ import {
   User,
   ShieldCheck,
   Command,
-  FileText,
-  Briefcase,
-  CheckCircle2,
   Menu,
+  FileText,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { CommandBarModal } from "@/components/dashboard/CommandBarModal"
@@ -28,6 +31,16 @@ export function TopHeader({ onToggleAI, onOpenMobileSidebar }: TopHeaderProps) {
   const [showMenu, setShowMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false)
+
+  const { data: overview } = useApi<DashboardOverview>("/api/dashboard")
+  const { data: notifications } = useApi<{
+    items: NotificationType[]
+    unread: number
+  }>("/api/notifications")
+
+  const readiness = overview ? Math.round(overview.readiness.score) : null
+  const unread = notifications?.unread ?? 0
+  const latest = (notifications?.items ?? []).slice(0, 3)
 
   return (
     <>
@@ -63,20 +76,27 @@ export function TopHeader({ onToggleAI, onOpenMobileSidebar }: TopHeaderProps) {
           <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full material-titanium border border-sky-400/30 text-xs shadow-lg shadow-sky-500/5 group relative cursor-pointer">
             <ShieldCheck className="w-4 h-4 text-sky-400" />
             <span className="text-zinc-400">AI Readiness:</span>
-            <span className="font-bold text-sky-300 font-mono">88%</span>
+            <span className="font-bold text-sky-300 font-mono">
+              {readiness != null ? `${readiness}%` : "—"}
+            </span>
             <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 material-glass p-3 rounded-xl border border-white/10 shadow-2xl w-48 text-[11px] space-y-1 text-left z-50">
               <p className="font-semibold text-white">Readiness Breakdown</p>
-              <p className="text-zinc-400">
-                DSA/Algo: <span className="text-sky-400 font-mono">92%</span>
-              </p>
-              <p className="text-zinc-400">
-                System Design:{" "}
-                <span className="text-amber-400 font-mono">84%</span>
-              </p>
-              <p className="text-zinc-400">
-                ATS Keyword:{" "}
-                <span className="text-emerald-400 font-mono">96%</span>
-              </p>
+              {overview &&
+                Object.entries(overview.readiness.components).map(
+                  ([key, c]) => (
+                    <p key={key} className="text-zinc-400 capitalize">
+                      {key.replace(/([A-Z])/g, " $1")}:{" "}
+                      <span className="text-sky-400 font-mono">
+                        {Math.round(c.value * 100)}%
+                      </span>
+                    </p>
+                  ),
+                )}
+              {!overview && (
+                <p className="text-zinc-500">
+                  Complete your profile to build your score.
+                </p>
+              )}
             </div>
           </div>
 
@@ -96,8 +116,14 @@ export function TopHeader({ onToggleAI, onOpenMobileSidebar }: TopHeaderProps) {
               className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 transition relative"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-sky-400 rounded-full animate-ping" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-sky-400 rounded-full" />
+              {unread > 0 && (
+                <>
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-sky-400 rounded-full animate-ping" />
+                  <span className="absolute top-1 right-1 flex items-center justify-center min-w-3.5 h-3.5 px-0.5 rounded-full bg-sky-500 text-[8px] font-bold text-black">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                </>
+              )}
             </button>
 
             <AnimatePresence>
@@ -117,40 +143,38 @@ export function TopHeader({ onToggleAI, onOpenMobileSidebar }: TopHeaderProps) {
                       onClick={() => setShowNotifications(false)}
                       className="text-[10px] text-sky-400 hover:underline font-medium"
                     >
-                      View All (3)
+                      View All{unread > 0 ? ` (${unread})` : ""}
                     </Link>
                   </div>
 
                   <div className="space-y-2 text-xs max-h-64 overflow-y-auto pr-1">
-                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition">
-                      <div className="flex items-center gap-2 text-sky-400 font-semibold text-[11px] mb-0.5">
-                        <Briefcase className="w-3.5 h-3.5" /> OpenAI Technical
-                        OA
-                      </div>
-                      <p className="text-[10px] text-zinc-400">
-                        Scheduled for Friday. Practice Graph Traversals in Mock
-                        Interview.
+                    {latest.length === 0 && (
+                      <p className="text-[11px] text-zinc-500 py-3 text-center">
+                        No notifications yet.
                       </p>
-                    </div>
-
-                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition">
-                      <div className="flex items-center gap-2 text-amber-400 font-semibold text-[11px] mb-0.5">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Roadmap
-                        Milestone
-                      </div>
-                      <p className="text-[10px] text-zinc-400">
-                        +2 System Design tasks added to Full-Stack track.
-                      </p>
-                    </div>
-
-                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition">
-                      <div className="flex items-center gap-2 text-emerald-400 font-semibold text-[11px] mb-0.5">
-                        <FileText className="w-3.5 h-3.5" /> ATS Score Update
-                      </div>
-                      <p className="text-[10px] text-zinc-400">
-                        Resume scorecard increased to 96% match for Google SWE.
-                      </p>
-                    </div>
+                    )}
+                    {latest.map((n) => (
+                      <Link
+                        key={n.id}
+                        href={n.link ?? "/notifications"}
+                        onClick={() => setShowNotifications(false)}
+                      >
+                        <div
+                          className={`p-2.5 rounded-xl border hover:bg-white/10 transition ${
+                            n.read
+                              ? "bg-white/5 border-white/5"
+                              : "bg-sky-500/10 border-sky-500/20"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 text-[11px] font-semibold mb-0.5 text-sky-300">
+                            <Bell className="w-3.5 h-3.5" /> {n.title}
+                          </div>
+                          <p className="text-[10px] text-zinc-400 line-clamp-2">
+                            {n.message}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 </motion.div>
               )}
@@ -164,16 +188,19 @@ export function TopHeader({ onToggleAI, onOpenMobileSidebar }: TopHeaderProps) {
               className="flex items-center gap-2.5 p-1.5 pl-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition"
             >
               <span className="text-xs font-semibold text-white hidden sm:inline">
-                {user?.name || "Alex Rivera"}
+                {user?.name || "Student"}
               </span>
-              <img
-                src={
-                  user?.avatarUrl ||
-                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
-                }
-                alt="Avatar"
-                className="w-7 h-7 rounded-lg object-cover border border-white/20"
-              />
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt="Avatar"
+                  className="w-7 h-7 rounded-lg object-cover border border-white/20"
+                />
+              ) : (
+                <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-[11px] font-extrabold text-black">
+                  {(user?.name || "U").slice(0, 1).toUpperCase()}
+                </span>
+              )}
             </button>
 
             <AnimatePresence>
@@ -186,10 +213,10 @@ export function TopHeader({ onToggleAI, onOpenMobileSidebar }: TopHeaderProps) {
                 >
                   <div className="px-3 py-2 border-b border-white/10 mb-1">
                     <p className="text-xs font-bold text-white">
-                      {user?.name || "Alex Rivera"}
+                      {user?.name || "Student"}
                     </p>
                     <p className="text-[10px] text-zinc-400 truncate">
-                      {user?.email || "alex.rivera@stanford.edu"}
+                      {user?.email || ""}
                     </p>
                   </div>
 

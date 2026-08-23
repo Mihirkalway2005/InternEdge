@@ -1,37 +1,36 @@
-import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { prisma } from "@/lib/db"
-import { getCurrentUserId } from "@/lib/session"
+import { handleRoute, json, parseBody, requireUser } from "@/lib/api-helpers"
 
-export async function GET() {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  try {
-    const projects = await prisma.project.findMany({
-      where: { userId },
-      orderBy: { createdAt: "asc" },
-    })
-    return NextResponse.json(projects)
-  } catch {
-    return NextResponse.json({ error: "Failed to list projects" }, {
-      status: 500,
-    })
-  }
-}
+const createSchema = z.object({
+  title: z.string().min(1).max(120),
+  description: z.string().min(1).max(4000),
+  techStack: z.array(z.string().max(40)).max(20).default([]),
+  github: z.string().url().max(300).nullish(),
+  liveDemo: z.string().url().max(300).nullish(),
+  startDate: z.string().max(40),
+  endDate: z.string().max(40).nullish(),
+})
 
-export async function POST(req: NextRequest) {
-  const userId = await getCurrentUserId()
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-  try {
-    const body = await req.json()
-    const project = await prisma.project.create({ data: { ...body, userId } })
-    return NextResponse.json(project, { status: 201 })
-  } catch {
-    return NextResponse.json({ error: "Failed to create project" }, {
-      status: 500,
-    })
-  }
-}
+export const GET = handleRoute(async () => {
+  const { userId } = await requireUser()
+  const projects = await prisma.project.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  })
+  return json(projects)
+})
+
+export const POST = handleRoute(async (req: Request) => {
+  const { userId } = await requireUser()
+  const body = await parseBody(req, createSchema)
+  const project = await prisma.project.create({
+    data: {
+      ...body,
+      github: body.github ?? null,
+      liveDemo: body.liveDemo ?? null,
+      userId,
+    },
+  })
+  return json(project, 201)
+})

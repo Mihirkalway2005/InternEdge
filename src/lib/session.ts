@@ -1,22 +1,29 @@
 import { headers } from "next/headers"
 import { auth } from "./auth"
-import { prisma } from "./db"
 
-const DEMO_USER_EMAIL = "alex.student@university.edu"
+export type AuthSession = {
+  userId: string
+  userEmail: string
+  userName: string
+  userRole: string
+}
 
-export async function getSession() {
+/**
+ * Single source of truth for the authenticated user.
+ * Returns null when there is no valid session — callers must fail closed.
+ * Never fall back to a demo/shared user; that would leak data across accounts.
+ */
+export async function getAuthSession(): Promise<AuthSession | null> {
   try {
-    return await auth.api.getSession({ headers: await headers() })
+    const result = await auth.api.getSession({ headers: await headers() })
+    if (!result?.user?.id) return null
+    return {
+      userId: result.user.id,
+      userEmail: result.user.email ?? "",
+      userName: result.user.name ?? "",
+      userRole: (result.user as { role?: string }).role ?? "student",
+    }
   } catch {
     return null
   }
-}
-
-export async function getCurrentUserId() {
-  const session = await getSession()
-  if (session?.user?.id) return session.user.id
-  const demo = await prisma.user.findFirst({
-    where: { email: DEMO_USER_EMAIL },
-  })
-  return demo?.id ?? null
 }

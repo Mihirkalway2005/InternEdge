@@ -133,7 +133,7 @@ InternEdge is built on a **Deterministic-First, AI-Enriched** architectural patt
 | **Framework** | [Next.js 15](https://nextjs.org/) (App Router) | Hybrid SSR, React Server Components, Server Actions & API Routes |
 | **Frontend UI** | [React 19](https://react.dev/) + [Tailwind CSS v4](https://tailwindcss.com/) | Modern UI layer styled with `@tailwindcss/postcss` and Framer Motion |
 | **Icons & UI** | [Lucide React](https://lucide.dev/) | Clean, lightweight icon suite |
-| **Authentication** | [BetterAuth](https://better-auth.com/) | Session-based authentication (Email/Password, GitHub, Google) |
+| **Authentication** | [BetterAuth](https://better-auth.com/) | Session-based authentication (Email/Password & Google OAuth) |
 | **Database** | [PostgreSQL (Neon)](https://neon.tech/) | Serverless relational database pool |
 | **ORM** | [Prisma 7](https://www.prisma.io/) + `@prisma/adapter-pg` | Type-safe query engine and database migrations |
 | **Validation** | [Zod 4](https://zod.dev/) | Runtime request validation and AI structured output schemas |
@@ -238,6 +238,12 @@ LLM_TIMEOUT_MS="30000"
 
 # File Storage
 UPLOAD_DIR=".data/uploads"
+
+# OAuth Providers (Optional - feature enabled when keys provided)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
 
 # Seed Option (Set to "true" if you want mock demo users and fixture applications)
 SEED_DEMO_DATA="false"

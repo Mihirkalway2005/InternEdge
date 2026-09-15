@@ -24,6 +24,9 @@ pnpm-debug.log*
 .env.test.local
 .env.production.local
 
+# local upload storage / runtime data
+.data/
+
 # vercel
 .vercel
 

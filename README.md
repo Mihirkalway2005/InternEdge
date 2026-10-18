@@ -18,12 +18,32 @@
 
 ---
 
+<p align="center">
+  <img src="report/screenshots/03_dashboard.png" alt="InternEdge Dashboard Preview" width="100%" />
+</p>
+
 ## 🌟 Overview
 
 **InternEdge** is an intelligent, end-to-end career operating system engineered to bridge the gap between academic education and industry expectations. Instead of serving as a simple job board, InternEdge acts as an ambient career companion that unifies student profiles, evaluates resumes against real ATS heuristics, diagnoses technical skill gaps, generates custom learning roadmaps, conducts mock interviews with per-answer evaluation, and automates public portfolio generation.
 
 ### The Unified Student Profile Philosophy
 Every module in InternEdge connects to a **single source of truth** (the Unified Student Profile). When a student uploads a resume, solves roadmap milestones, or completes a mock interview, their **Readiness Score** dynamically recalibrates, internship match recommendations sharpen, and public portfolios update in real time.
+
+---
+
+## 📸 Visual Showcase
+
+| Unified Dashboard & Readiness Score | AI Resume Analyzer & ATS Diagnostic |
+|:---:|:---:|
+| [![Unified Dashboard](report/screenshots/03_dashboard.png)](report/screenshots/03_dashboard.png) | [![Resume Analyzer](report/screenshots/04_resume_analyzer.png)](report/screenshots/04_resume_analyzer.png) |
+| **Internship Matching & Discovery** | **Adaptive Learning Roadmap & Skill Gaps** |
+| [![Internship Discovery](report/screenshots/05_internships_discovery.png)](report/screenshots/05_internships_discovery.png) | [![Learning Roadmap](report/screenshots/06_learning_roadmap.png)](report/screenshots/06_learning_roadmap.png) |
+| **Application Pipeline Tracker (Kanban)** | **AI Mock Interview Simulator & Feedback** |
+| [![Application Tracker](report/screenshots/07_applications_tracker.png)](report/screenshots/07_applications_tracker.png) | [![Mock Interviews](report/screenshots/08_mock_interviews.png)](report/screenshots/08_mock_interviews.png) |
+| **Instant Public Portfolio Builder** | **Career Analytics & Readiness Growth** |
+| [![Portfolio Builder](report/screenshots/09_portfolio_builder.png)](report/screenshots/09_portfolio_builder.png) | [![Career Analytics](report/screenshots/10_analytics.png)](report/screenshots/10_analytics.png) |
+| **Interactive Keynote Landing Experience** | **Unified Student Profile & Skills** |
+| [![Keynote Landing](report/screenshots/01_landing_page.png)](report/screenshots/01_landing_page.png) | [![Student Profile](report/screenshots/11_profile.png)](report/screenshots/11_profile.png) |
 
 ---
 
@@ -153,6 +173,18 @@ InternEdge/
 │   ├── schema.prisma          # PostgreSQL Prisma schema definition
 │   └── seed.ts                # Database seeder (companies, internships, fixtures)
 ├── public/                    # Static assets, fonts, and icons
+├── report/                    # Project reports, presentation decks & screenshots
+│   ├── screenshots/           # Full-resolution UI screenshots across all modules
+│   ├── InternEdge_Project_Presentation.pdf   # Slide deck PDF
+│   ├── InternEdge_Project_Presentation.pptx  # Microsoft PowerPoint presentation
+│   ├── InternEdge_Project_Presentation.md    # Markdown slide outline
+│   ├── InternEdge_Project_Report.docx        # Academic project report (Word)
+│   └── InternEdge_Project_Report.md          # Comprehensive technical report
+├── scripts/                   # Build and automation utilities
+│   ├── capture_screenshots.mjs # Automated Playwright browser screenshot script
+│   ├── build_full_report.py   # Python DOCX report generation script
+│   ├── generate_presentation.py # Python PPTX presentation generator
+│   └── generate_presentation_pdf.py # Presentation PDF exporter
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/            # Auth routes (login, signup, onboarding)
@@ -281,9 +313,12 @@ Open [http://localhost:8443](http://localhost:8443) in your browser.
 | `npm run typecheck` | Validates TypeScript types across the entire project |
 | `npm run lint` | Checks code formatting and syntax with `oxfmt` |
 | `npm run format` | Automatically formats all codebase files |
+| `npm run db:generate` | Generates Prisma Client types and bindings |
 | `npm run db:migrate` | Creates and applies Prisma migrations during development |
+| `npm run db:push` | Synchronizes Prisma schema directly with the database |
 | `npm run db:seed` | Seeds the database with companies, roles, and reference data |
 | `npm run db:studio` | Launches Prisma Studio GUI for database inspection |
+| `node scripts/capture_screenshots.mjs` | Automated Playwright script capturing UI screenshots into `report/screenshots/` |
 
 ---
 
@@ -325,6 +360,24 @@ npm test
    npx prisma migrate deploy && next build
    ```
 6. Deploy!
+
+---
+
+## 📚 Documentation & Academic Project Reports
+
+The repository includes complete academic project documentation, technical reports, presentation decks, and visual asset automation within the [`report/`](report/) and [`scripts/`](scripts/) directories:
+
+- 📑 **Comprehensive Project Report**:
+  - [`report/InternEdge_Project_Report.md`](report/InternEdge_Project_Report.md): Full markdown specification covering problem formulation, functional requirements, heuristic formulas, system architecture, and empirical verification.
+  - [`report/InternEdge_Project_Report.docx`](report/InternEdge_Project_Report.docx): Professional Microsoft Word format styled with formal typography, tables, and architectural diagrams.
+- 📽️ **Presentation Decks**:
+  - [`report/InternEdge_Project_Presentation.pptx`](report/InternEdge_Project_Presentation.pptx): Fully editable Microsoft PowerPoint deck suitable for technical reviews, defenses, and demonstrations.
+  - [`report/InternEdge_Project_Presentation.pdf`](report/InternEdge_Project_Presentation.pdf): High-fidelity slide deck compiled in PDF format.
+  - [`report/InternEdge_Project_Presentation.md`](report/InternEdge_Project_Presentation.md): Structured slide outline and presentation notes.
+- 🛠️ **Document & Asset Automation Scripts**:
+  - `node scripts/capture_screenshots.mjs`: Launches an automated Playwright browser session, logs into demo accounts, and captures 2880×1800 retina screenshots.
+  - `python3 scripts/build_full_report.py`: Programmatically generates and formats the Word docx report.
+  - `python3 scripts/generate_presentation.py` & `generate_presentation_pdf.py`: Generates the PowerPoint and PDF slide presentations.
 
 ---
 
